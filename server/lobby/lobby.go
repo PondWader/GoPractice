@@ -1,17 +1,7 @@
 package lobby
 
-import (
-	"sync"
+import "github.com/PondWader/GoPractice/server/context"
 
-	"github.com/PondWader/GoPractice/protocol"
-)
-
-type Lobby struct {
-	players []*protocol.ProtocolClient
-}
-
-func (l *Lobby) AddToLobby(client *protocol.ProtocolClient, mu *sync.Mutex) {
-	l.players = append(l.players, client)
-
-	newHandler(client, mu)
+func New() *context.Context {
+	return context.New()
 }

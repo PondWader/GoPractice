@@ -103,6 +103,16 @@ type CPlayerListHeaderAndFooter struct {
 	Footer ChatComponent `type:"JSON"`
 }
 
+type CChunkData struct {
+	ChunkX             int32  `type:"Int"`
+	ChunkY             int32  `type:"Int"`
+	ChunkZ             int32  `type:"Int"`
+	GroundUpContinuous bool   `type:"Boolean"`
+	PrimaryBitMask     uint16 `type:"UnsignedShort"`
+	Size               int    `type:"VarInt"`
+	Data               []byte `type:"ByteArray"`
+}
+
 /*
 	Serverbound packets
 */

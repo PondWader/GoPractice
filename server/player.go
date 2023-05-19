@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/PondWader/GoPractice/protocol"
+	"github.com/PondWader/GoPractice/server/context"
 )
 
 type Player struct {
@@ -16,7 +17,8 @@ type Player struct {
 	lastSentKeepAlive     int
 	lastReceivedKeepAlive int
 
-	entityId int32
+	entityId       int32
+	currentContext *context.Context
 }
 
 func NewPlayer(client *protocol.ProtocolClient, server *Server) *Player {
@@ -41,6 +43,7 @@ func NewPlayer(client *protocol.ProtocolClient, server *Server) *Player {
 	server.Mu.Lock()
 	server.entityIdIncrementer++
 	server.Players = append(server.Players, p)
+	p.currentContext = server.lobby
 	server.Mu.Unlock()
 
 	go p.keepAlive()
@@ -97,6 +100,7 @@ func (p *Player) loadInPlayer() {
 
 	p.loadPlayerList()
 	p.addToPlayerlist()
+	p.currentContext.AddPlayer(p.client, p.entityId, p.mu)
 }
 
 // Function that runs the goroutine responsible for sending keep alives and checking if the client has timed out

@@ -4,6 +4,7 @@ import (
 	"sync"
 
 	"github.com/PondWader/GoPractice/protocol"
+	"github.com/PondWader/GoPractice/server/structs"
 )
 
 // The context package is used to create each "context"
@@ -11,23 +12,52 @@ import (
 // The context handles showing players to each other and chunk loading and provides utilities to be built on top of
 
 type Context struct {
+	Mu      *sync.RWMutex
 	players map[int32]*ContextPlayer
 }
 
 type ContextPlayer struct {
 	EntityId int32
 	Client   *protocol.ProtocolClient
-	mu       *sync.Mutex
+	Position *structs.Location
+	Mu       *sync.Mutex
+}
+
+func New() *Context {
+	return &Context{
+		Mu:      &sync.RWMutex{},
+		players: make(map[int32]*ContextPlayer),
+	}
 }
 
 func (c *Context) AddPlayer(client *protocol.ProtocolClient, entityId int32, mu *sync.Mutex) {
 	p := &ContextPlayer{
 		EntityId: entityId,
 		Client:   client,
-		mu:       mu,
+		Mu:       mu,
 	}
 
+	p.Teleport(&structs.Location{
+		X: 0,
+		Y: 60,
+		Z: 0,
+	})
+
+	mu.Lock()
+	p.Client.WritePacket(0x21, protocol.Serialize(&protocol.CChunkData{
+		ChunkX:             0,
+		ChunkY:             0,
+		ChunkZ:             0,
+		GroundUpContinuous: true,
+		PrimaryBitMask:     1,
+		Size:               16 * 16 * 16,
+		Data:               make([]byte, 16*16*16),
+	}))
+	mu.Unlock()
+
+	c.Mu.Lock()
 	c.players[entityId] = p
+	c.Mu.Unlock()
 }
 
 func (c *Context) RemovePlayer(entityId int32) {

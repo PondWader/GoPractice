@@ -45,6 +45,10 @@ func Serialize(format interface{}) []byte {
 			data = append(data, value.(uint8))
 		case "Byte":
 			data = append(data, uint8(value.(int8)))
+		case "UnsignedShort":
+			bytes := make([]byte, 2)
+			binary.BigEndian.PutUint16(bytes, value.(uint16))
+			data = append(data, bytes...)
 		case "Boolean":
 			v := value.(bool)
 			if v == true {

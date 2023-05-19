@@ -12,6 +12,8 @@ import (
 	"github.com/PondWader/GoPractice/config"
 	"github.com/PondWader/GoPractice/database"
 	"github.com/PondWader/GoPractice/protocol"
+	"github.com/PondWader/GoPractice/server/context"
+	"github.com/PondWader/GoPractice/server/lobby"
 	"github.com/PondWader/GoPractice/utils"
 	"gorm.io/gorm"
 )
@@ -26,6 +28,8 @@ type Server struct {
 	Version             string
 	Players             []*Player
 	entityIdIncrementer int32
+
+	lobby *context.Context
 }
 
 func New(cfg config.ServerConfiguration, version string) *Server {
@@ -43,6 +47,7 @@ func New(cfg config.ServerConfiguration, version string) *Server {
 			Port:     cfg.DatabasePort,
 		}),
 		Version: version,
+		lobby:   lobby.New(),
 	}
 
 	return server
