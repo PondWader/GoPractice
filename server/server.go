@@ -26,7 +26,7 @@ type Server struct {
 
 	Config              config.ServerConfiguration
 	Version             string
-	Players             []*Player
+	Players             map[string]*Player
 	entityIdIncrementer int32
 
 	lobby *context.Context
@@ -48,6 +48,7 @@ func New(cfg config.ServerConfiguration, version string) *Server {
 		}),
 		Version: version,
 		lobby:   lobby.New(),
+		Players: map[string]*Player{},
 	}
 
 	return server

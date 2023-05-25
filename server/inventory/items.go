@@ -1,6 +1,6 @@
 package inventory
 
-type item int16
+type item uint16
 
 const (
 	Air item = iota

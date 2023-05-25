@@ -25,24 +25,20 @@ func NewPlayer(client *protocol.ProtocolClient, server *Server) *Player {
 	server.Mu.RLock()
 	players := server.Players
 	server.Mu.RUnlock()
-	for _, player := range players {
-		if player.client.Username == client.Username {
-			client.Disconnect("§cUser is already connected from another location.")
-			return nil
-		}
+	if players[client.Uuid.String()] != nil {
+		client.Disconnect("§cUser is already connected from another location.")
+		return nil
 	}
 
-	server.Mu.RLock()
+	server.Mu.Lock()
 	p := &Player{
 		client:   client,
 		server:   server,
 		entityId: server.entityIdIncrementer,
 		mu:       &sync.Mutex{},
 	}
-	server.Mu.RUnlock()
-	server.Mu.Lock()
 	server.entityIdIncrementer++
-	server.Players = append(server.Players, p)
+	server.Players[client.Uuid.String()] = p
 	p.currentContext = server.lobby
 	server.Mu.Unlock()
 
@@ -61,6 +57,10 @@ func NewPlayer(client *protocol.ProtocolClient, server *Server) *Player {
 
 func (p *Player) handleEnd() {
 	p.removeFromPlayerlist()
+
+	p.server.Mu.Lock()
+	delete(p.server.Players, p.client.Uuid.String())
+	p.server.Mu.Unlock()
 }
 
 func (p *Player) loadInPlayer() {
@@ -68,7 +68,7 @@ func (p *Player) loadInPlayer() {
 
 	p.client.WritePacket(0x01, protocol.Serialize(&protocol.CJoinGamePacket{
 		EntityID:         p.entityId,
-		GameMode:         2, // Adventure
+		GameMode:         1, //Temp: create // Adventure
 		Dimension:        0,
 		Difficulty:       2, // Normal difficulty
 		MaxPlayers:       100,
@@ -77,7 +77,7 @@ func (p *Player) loadInPlayer() {
 	}))
 
 	p.client.WritePacket(0x39, protocol.Serialize(&protocol.CPlayerAbilitiesPacket{
-		Flags:        0,
+		Flags:        0x04,
 		FlyingSpeed:  0.05,
 		WalkingSpeed: 0.1,
 	}))

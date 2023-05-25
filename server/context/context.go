@@ -5,6 +5,7 @@ import (
 
 	"github.com/PondWader/GoPractice/protocol"
 	"github.com/PondWader/GoPractice/server/structs"
+	"github.com/PondWader/GoPractice/server/world"
 )
 
 // The context package is used to create each "context"
@@ -44,15 +45,20 @@ func (c *Context) AddPlayer(client *protocol.ProtocolClient, entityId int32, mu 
 	})
 
 	mu.Lock()
-	p.Client.WritePacket(0x21, protocol.Serialize(&protocol.CChunkData{
+	chunk := world.NewChunk()
+	chunk.SetBlock(0, 0, 0, 2)
+	chunk.SetBlock(0, 5, 1, 2)
+	format := chunk.ToFormat()
+	p.Client.WritePacket(0x21, protocol.Serialize(format))
+
+	/*p.Client.WritePacket(0x21, protocol.Serialize(&protocol.CChunkData{
 		ChunkX:             0,
-		ChunkY:             0,
 		ChunkZ:             0,
 		GroundUpContinuous: true,
 		PrimaryBitMask:     1,
 		Size:               16 * 16 * 16,
 		Data:               make([]byte, 16*16*16),
-	}))
+	}))*/
 	mu.Unlock()
 
 	c.Mu.Lock()
