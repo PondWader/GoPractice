@@ -3,6 +3,7 @@ package protocol
 import (
 	"encoding/binary"
 	"errors"
+	"math"
 	"reflect"
 )
 
@@ -52,6 +53,14 @@ func (client *ProtocolClient) deserialize(data []byte, format interface{}) error
 		case "ByteArray":
 			lengthField := formatType.Field(i).Tag.Get("length")
 			v, err := deserializer.readBytes(value.FieldByName(lengthField).Interface().(int))
+			if err != nil {
+				client.Disconnect(err.Error())
+				return err
+			}
+			field.Set(reflect.ValueOf(v))
+
+		case "Double":
+			v, err := deserializer.readDouble()
 			if err != nil {
 				client.Disconnect(err.Error())
 				return err
@@ -117,4 +126,12 @@ func (deserializer *deserializer) readUnsignedShort() (uint16, error) {
 		return 0, err
 	}
 	return binary.BigEndian.Uint16(bytes), nil
+}
+
+func (deserializer *deserializer) readDouble() (float64, error) {
+	bytes, err := deserializer.readBytes(8)
+	if err != nil {
+		return 0, err
+	}
+	return math.Float64frombits(binary.BigEndian.Uint64(bytes)), nil
 }

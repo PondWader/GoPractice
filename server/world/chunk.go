@@ -18,9 +18,11 @@ type Chunk struct {
 	Z        int32
 }
 
-func NewChunk() *Chunk {
+func NewChunk(x int32, z int32) *Chunk {
 	return &Chunk{
 		mu: &sync.RWMutex{},
+		X:  x,
+		Z:  z,
 	}
 }
 
@@ -45,12 +47,14 @@ func (c *Chunk) getSection(y int) *ChunkSection {
 	return section
 }
 
-func (c *Chunk) SetBlock(x int, y int, z int, blockType uint8) {
+func (c *Chunk) SetBlock(x int, y int, z int, blockType uint8) *Chunk {
 	section := c.getSection(y)
 
 	c.mu.Lock()
 	section.blocks[getBlockIndex(x, y, z)] = uint16(blockType << 4)
 	c.mu.Unlock()
+
+	return c
 }
 
 func (c *Chunk) SetState(x int, y int, z int, state uint8) {
@@ -138,8 +142,8 @@ func (c *Chunk) ToSaveFormat(world string) []byte {
 	return data
 }
 
-func ChunkFromSave(data []byte) *Chunk {
-	chunk := NewChunk()
+func ChunkFromSave(x int32, z int32, data []byte) *Chunk {
+	chunk := NewChunk(x, z)
 
 	bitMask := uint16(data[0]) + (uint16(data[1]) << 8)
 	var currentChunkBitMask uint16 = 1
@@ -158,4 +162,8 @@ func ChunkFromSave(data []byte) *Chunk {
 	}
 
 	return chunk
+}
+
+func (c *Chunk) getKey() string {
+	return fmt.Sprint(c.X) + "," + fmt.Sprint(c.Z)
 }

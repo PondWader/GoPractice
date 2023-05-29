@@ -41,6 +41,10 @@ func Serialize(format interface{}) []byte {
 			bytes := make([]byte, 4)
 			binary.BigEndian.PutUint32(bytes, uint32(value.(int32)))
 			data = append(data, bytes...)
+		case "Long":
+			bytes := make([]byte, 8)
+			binary.BigEndian.PutUint64(bytes, uint64(value.(int64)))
+			data = append(data, bytes...)
 		case "UnsignedByte":
 			data = append(data, value.(uint8))
 		case "Byte":

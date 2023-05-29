@@ -30,3 +30,13 @@ func (l *Location) SetDirection(Yaw float32, Pitch float32) {
 	l.Yaw = Yaw
 	l.Pitch = Pitch
 }
+
+func (l *Location) GetBlockX() int32 {
+	return int32(l.X)
+}
+func (l *Location) GetBlockY() int32 {
+	return int32(l.Y)
+}
+func (l *Location) GetBlockZ() int32 {
+	return int32(l.Z)
+}

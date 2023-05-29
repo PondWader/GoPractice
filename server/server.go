@@ -47,7 +47,7 @@ func New(cfg config.ServerConfiguration, version string) *Server {
 			Port:     cfg.DatabasePort,
 		}),
 		Version: version,
-		lobby:   lobby.New(),
+		lobby:   lobby.New(&cfg),
 		Players: map[string]*Player{},
 	}
 

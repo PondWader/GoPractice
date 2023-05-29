@@ -60,6 +60,7 @@ func (p *Player) handleEnd() {
 
 	p.server.Mu.Lock()
 	delete(p.server.Players, p.client.Uuid.String())
+	p.currentContext.RemovePlayer(p.entityId)
 	p.server.Mu.Unlock()
 }
 
@@ -68,7 +69,7 @@ func (p *Player) loadInPlayer() {
 
 	p.client.WritePacket(0x01, protocol.Serialize(&protocol.CJoinGamePacket{
 		EntityID:         p.entityId,
-		GameMode:         1, //Temp: create // Adventure
+		GameMode:         1, //Temp: creative // Adventure
 		Dimension:        0,
 		Difficulty:       2, // Normal difficulty
 		MaxPlayers:       100,
@@ -86,14 +87,9 @@ func (p *Player) loadInPlayer() {
 		Slot: 0,
 	}))
 
-	// Temp just to test stuff, this should be handled by context
-	p.client.WritePacket(0x08, protocol.Serialize(&protocol.CSetPlayerPositionAndLook{
-		X:     0,
-		Y:     100,
-		Z:     0,
-		Yaw:   0,
-		Pitch: 0,
-		Flags: 0,
+	p.client.WritePacket(0x03, protocol.Serialize(&protocol.CTimeUpdate{
+		WorldAge:  0,
+		TimeOfDay: 6000,
 	}))
 
 	p.mu.Unlock()

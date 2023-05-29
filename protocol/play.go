@@ -29,6 +29,11 @@ type CChatMessage struct {
 	Position int8          `type:"Byte"`
 }
 
+type CTimeUpdate struct {
+	WorldAge  int64 `type:"Long"`
+	TimeOfDay int64 `type:"Long"`
+}
+
 type CSetPlayerPositionAndLook struct {
 	X     float64 `type:"Double"`
 	Y     float64 `type:"Double"`
@@ -116,15 +121,15 @@ type CChunkData struct {
 	Serverbound packets
 */
 
+type SChatPacket struct {
+	Message string `type:"String"`
+}
+
 type SPlayerPositionPacket struct {
 	X        float64 `type:"Double"`
 	Y        float64 `type:"Double"`
 	Z        float64 `type:"Double"`
 	OnGround bool    `type:"Boolean"`
-}
-
-type SChatPacket struct {
-	Message string `type:"String"`
 }
 
 func (client *ProtocolClient) play() {
@@ -146,6 +151,8 @@ func (client *ProtocolClient) BeginPacketReader() {
 			packetFormat = &KeepAlivePacket{}
 		case 0x01:
 			packetFormat = &SChatPacket{}
+		case 0x04:
+			packetFormat = &SPlayerPositionPacket{}
 		default:
 			utils.Error("Received unrecognized packet of ID", packetId, "from", client.Username)
 			continue

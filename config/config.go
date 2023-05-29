@@ -21,6 +21,8 @@ type ServerConfiguration struct {
 	DatabaseName     string `default:"" yaml:"database-name"`
 	DatabaseHost     string `default:"" yaml:"database-host"`
 	DatabasePort     uint16 `default:"3306" yaml:"database-port"`
+
+	ViewDistance int `default:"6" yaml:"view-distance"`
 }
 
 func LoadConfig() ServerConfiguration {
