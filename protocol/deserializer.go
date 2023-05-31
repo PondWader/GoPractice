@@ -74,6 +74,17 @@ func (client *ProtocolClient) deserialize(data []byte, format interface{}) error
 				return err
 			}
 			field.Set(reflect.ValueOf(v))
+
+		case "Boolean":
+			v, err := deserializer.readBytes(1)
+			if err != nil {
+				client.Disconnect(err.Error())
+				return err
+			}
+			field.Set(reflect.ValueOf(v[0] == 1))
+
+		default:
+			panic("A type of " + valueType + " is used but the deserializer does not know how to handle it!")
 		}
 	}
 

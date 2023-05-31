@@ -31,12 +31,16 @@ func (p *ContextPlayer) handlePlayerPositionUpdate(packet interface{}) {
 
 	p.handlePositionChange(playerPositionPacket.X, playerPositionPacket.Y, playerPositionPacket.Z)
 
-	if diffX == 0 && diffY == 0 && diffZ == 0 {
+	GroundStateIsSame := p.IsOnGround == playerPositionPacket.OnGround
+
+	if diffX == 0 && diffY == 0 && diffZ == 0 && GroundStateIsSame {
 		p.Mu.Unlock()
 		return
 	}
 
-	if p.IsOnGround == playerPositionPacket.OnGround && diffX < 4 && diffY < 4 && diffZ < 4 && diffX > -4 && diffY > -4 && diffZ > -4 {
+	MovementIsWithinLimits := diffX < 4 && diffY < 4 && diffZ < 4 && diffX > -4 && diffY > -4 && diffZ > -4
+
+	if GroundStateIsSame && MovementIsWithinLimits {
 		p.sendToPlayersInView(0x15, protocol.Serialize(&protocol.CEntityRelativeMovePacket{
 			EntityID: int(p.EntityId),
 			DeltaX:   int8(playerPositionPacket.X*32) - int8(oldX*32),
@@ -45,6 +49,7 @@ func (p *ContextPlayer) handlePlayerPositionUpdate(packet interface{}) {
 			OnGround: playerPositionPacket.OnGround,
 		}))
 	} else {
+		p.IsOnGround = playerPositionPacket.OnGround
 		p.sendToPlayersInView(0x18, protocol.Serialize(&protocol.CEntityTeleportPacket{
 			EntityID: int(p.EntityId),
 			X:        int32(p.Position.X * 32),
@@ -56,7 +61,6 @@ func (p *ContextPlayer) handlePlayerPositionUpdate(packet interface{}) {
 		}))
 	}
 
-	p.IsOnGround = playerPositionPacket.OnGround
 	p.Mu.Unlock()
 }
 
@@ -92,7 +96,10 @@ func (p *ContextPlayer) handlePlayerPositionAndLookUpdate(packet interface{}) {
 	p.handlePositionChange(playerPositionAndLookUpdatePacket.X, playerPositionAndLookUpdatePacket.Y, playerPositionAndLookUpdatePacket.Z)
 	p.handleDirectionChange(playerPositionAndLookUpdatePacket.Yaw, playerPositionAndLookUpdatePacket.Pitch)
 
-	if p.IsOnGround == playerPositionAndLookUpdatePacket.OnGround && diffX < 4 && diffY < 4 && diffZ < 4 && diffX > -4 && diffY > -4 && diffZ > -4 {
+	GroundStateIsSame := p.IsOnGround == playerPositionAndLookUpdatePacket.OnGround
+	MovementIsWithinLimits := diffX < 4 && diffY < 4 && diffZ < 4 && diffX > -4 && diffY > -4 && diffZ > -4
+
+	if GroundStateIsSame && MovementIsWithinLimits {
 		p.sendToPlayersInView(0x17, protocol.Serialize(&protocol.CEntityLookAndRelativeMovePacket{
 			EntityID: int(p.EntityId),
 			DeltaX:   int8(playerPositionAndLookUpdatePacket.X*32) - int8(oldX*32),
@@ -103,6 +110,7 @@ func (p *ContextPlayer) handlePlayerPositionAndLookUpdate(packet interface{}) {
 			OnGround: playerPositionAndLookUpdatePacket.OnGround,
 		}))
 	} else {
+		p.IsOnGround = playerPositionAndLookUpdatePacket.OnGround
 		p.sendToPlayersInView(0x18, protocol.Serialize(&protocol.CEntityTeleportPacket{
 			EntityID: int(p.EntityId),
 			X:        int32(p.Position.X * 32),
@@ -114,7 +122,6 @@ func (p *ContextPlayer) handlePlayerPositionAndLookUpdate(packet interface{}) {
 		}))
 	}
 
-	p.IsOnGround = playerPositionAndLookUpdatePacket.OnGround
 	p.Mu.Unlock()
 }
 
