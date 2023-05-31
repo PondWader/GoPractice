@@ -4,6 +4,7 @@ import (
 	"sync"
 
 	"github.com/PondWader/GoPractice/config"
+	server_interfaces "github.com/PondWader/GoPractice/interfaces/server"
 	"github.com/PondWader/GoPractice/protocol"
 	"github.com/PondWader/GoPractice/server/structs"
 	"github.com/PondWader/GoPractice/server/world"
@@ -28,7 +29,10 @@ type ContextPlayer struct {
 	loadedChunks map[string]*world.ChunkKey
 	Context      *Context
 
-	IsOnGround bool
+	DisplayedSkinParts uint8
+
+	IsOnGround     bool
+	EntitiesInView map[int32]server_interfaces.Entity
 }
 
 func New(world *world.World, config *config.ServerConfiguration) *Context {
@@ -42,25 +46,14 @@ func New(world *world.World, config *config.ServerConfiguration) *Context {
 
 func (c *Context) AddPlayer(client *protocol.ProtocolClient, entityId int32, mu *sync.Mutex) {
 	p := &ContextPlayer{
-		EntityId: entityId,
-		Client:   client,
-		Mu:       mu,
-		Context:  c,
+		EntityId:       entityId,
+		Client:         client,
+		Mu:             mu,
+		Context:        c,
+		Position:       &structs.Location{Y: 60},
+		EntitiesInView: make(map[int32]server_interfaces.Entity),
 	}
 
-	p.Teleport(&structs.Location{
-		X: 0,
-		Y: 60,
-		Z: 0,
-	})
-
-	/*mu.Lock()
-	chunk := world.NewChunk(0, 0)
-	chunk.SetBlock(0, 0, 0, 2)
-	chunk.SetBlock(0, 5, 1, 2)
-	format := chunk.ToFormat()
-	p.Client.WritePacket(0x21, protocol.Serialize(format))
-	mu.Unlock()*/
 	centralChunk := c.World.GetChunk(0, 0)
 	for x := 0; x < 16; x++ {
 		for z := 0; z < 16; z++ {
@@ -68,6 +61,14 @@ func (c *Context) AddPlayer(client *protocol.ProtocolClient, entityId int32, mu 
 		}
 	}
 	p.streamChunks()
+	p.Context.World.GetChunk(p.Position.GetBlockX()>>4, p.Position.GetBlockZ()>>4).AddEntity(p.EntityId, p)
+	p.updateViewedEntities()
+
+	p.Teleport(&structs.Location{
+		X: 0,
+		Y: 60,
+		Z: 0,
+	})
 
 	c.Mu.Lock()
 	c.players[entityId] = p
@@ -79,6 +80,8 @@ func (c *Context) AddPlayer(client *protocol.ProtocolClient, entityId int32, mu 
 func (p *ContextPlayer) loadHandlers() {
 	p.Mu.Lock()
 	p.Client.SetPacketHandler(&protocol.SPlayerPositionPacket{}, p.handlePlayerPositionUpdate)
+	p.Client.SetPacketHandler(&protocol.SPlayerLookPacket{}, p.handlePlayerLookUpdate)
+	p.Client.SetPacketHandler(&protocol.SPlayerPositionAndLookPacket{}, p.handlePlayerPositionAndLookUpdate)
 	p.Mu.Unlock()
 }
 

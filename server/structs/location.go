@@ -1,5 +1,7 @@
 package structs
 
+import "math"
+
 type Location struct {
 	X     float64
 	Y     float64
@@ -39,4 +41,16 @@ func (l *Location) GetBlockY() int32 {
 }
 func (l *Location) GetBlockZ() int32 {
 	return int32(l.Z)
+}
+
+func (l *Location) GetYawAngle() uint8 {
+	return uint8(((math.Mod(float64(l.Yaw), 360)) / 360) * 256)
+}
+
+func (l *Location) GetPitchAngle() uint8 {
+	return uint8(((math.Mod(float64(l.Pitch), 360)) / 360) * 256)
+}
+
+func (l *Location) Clone() *Location {
+	return &Location{l.X, l.Y, l.Z, l.Yaw, l.Pitch}
 }

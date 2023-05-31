@@ -1,7 +1,6 @@
 package protocol
 
 import (
-	"github.com/PondWader/GoPractice/utils"
 	"github.com/google/uuid"
 )
 
@@ -117,6 +116,61 @@ type CChunkData struct {
 	Data               []byte `type:"ByteArray"`
 }
 
+type EntityID struct {
+	Id int `type:"VarInt"`
+}
+type CDestroyEntitiesPacket struct {
+	Count     int         `type:"VarInt"`
+	EntityIDs []*EntityID `type:"Array"`
+}
+
+type CSpawnPlayerPacket struct {
+	EntityID    int        `type:"VarInt"`
+	UUID        *uuid.UUID `type:"UUID"`
+	X           float64    `type:"FixedPoint"`
+	Y           float64    `type:"FixedPoint"`
+	Z           float64    `type:"FixedPoint"`
+	Yaw         uint8      `type:"UnsignedByte"`
+	Pitch       uint8      `type:"UnsignedByte"`
+	CurrentItem int16      `type:"Short"`
+	Metadata    []byte     `type:"ByteArray"`
+}
+
+type CEntityRelativeMovePacket struct {
+	EntityID int  `type:"VarInt"`
+	DeltaX   int8 `type:"Byte"`
+	DeltaY   int8 `type:"Byte"`
+	DeltaZ   int8 `type:"Byte"`
+	OnGround bool `type:"Boolean"`
+}
+
+type CEntityLookPacket struct {
+	EntityID int   `type:"VarInt"`
+	Yaw      uint8 `type:"UnsignedByte"`
+	Pitch    uint8 `type:"UnsignedByte"`
+	OnGround bool  `type:"Boolean"`
+}
+
+type CEntityLookAndRelativeMovePacket struct {
+	EntityID int   `type:"VarInt"`
+	DeltaX   int8  `type:"Byte"`
+	DeltaY   int8  `type:"Byte"`
+	DeltaZ   int8  `type:"Byte"`
+	Yaw      uint8 `type:"UnsignedByte"`
+	Pitch    uint8 `type:"UnsignedByte"`
+	OnGround bool  `type:"Boolean"`
+}
+
+type CEntityTeleportPacket struct {
+	EntityID int   `type:"VarInt"`
+	X        int32 `type:"Int"`
+	Y        int32 `type:"Int"`
+	Z        int32 `type:"Int"`
+	Yaw      uint8 `type:"UnsignedByte"`
+	Pitch    uint8 `type:"UnsignedByte"`
+	OnGround bool  `type:"Boolean"`
+}
+
 /*
 	Serverbound packets
 */
@@ -129,6 +183,21 @@ type SPlayerPositionPacket struct {
 	X        float64 `type:"Double"`
 	Y        float64 `type:"Double"`
 	Z        float64 `type:"Double"`
+	OnGround bool    `type:"Boolean"`
+}
+
+type SPlayerLookPacket struct {
+	Yaw      float32 `type:"Float"`
+	Pitch    float32 `type:"Float"`
+	OnGround bool    `type:"Boolean"`
+}
+
+type SPlayerPositionAndLookPacket struct {
+	X        float64 `type:"Double"`
+	Y        float64 `type:"Double"`
+	Z        float64 `type:"Double"`
+	Yaw      float32 `type:"Float"`
+	Pitch    float32 `type:"Float"`
 	OnGround bool    `type:"Boolean"`
 }
 
@@ -153,8 +222,12 @@ func (client *ProtocolClient) BeginPacketReader() {
 			packetFormat = &SChatPacket{}
 		case 0x04:
 			packetFormat = &SPlayerPositionPacket{}
+		case 0x05:
+			packetFormat = &SPlayerLookPacket{}
+		case 0x06:
+			packetFormat = &SPlayerPositionAndLookPacket{}
 		default:
-			utils.Error("Received unrecognized packet of ID", packetId, "from", client.Username)
+			//utils.Error("Received unrecognized packet of ID", packetId, "from", client.Username)
 			continue
 		}
 

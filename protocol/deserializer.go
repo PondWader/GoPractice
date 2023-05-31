@@ -66,6 +66,14 @@ func (client *ProtocolClient) deserialize(data []byte, format interface{}) error
 				return err
 			}
 			field.Set(reflect.ValueOf(v))
+
+		case "Float":
+			v, err := deserializer.readFloat()
+			if err != nil {
+				client.Disconnect(err.Error())
+				return err
+			}
+			field.Set(reflect.ValueOf(v))
 		}
 	}
 
@@ -134,4 +142,12 @@ func (deserializer *deserializer) readDouble() (float64, error) {
 		return 0, err
 	}
 	return math.Float64frombits(binary.BigEndian.Uint64(bytes)), nil
+}
+
+func (deserializer *deserializer) readFloat() (float32, error) {
+	bytes, err := deserializer.readBytes(4)
+	if err != nil {
+		return 0, err
+	}
+	return math.Float32frombits(binary.BigEndian.Uint32(bytes)), nil
 }

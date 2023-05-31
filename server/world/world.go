@@ -3,6 +3,7 @@ package world
 import (
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/PondWader/GoPractice/protocol"
 )
@@ -16,16 +17,19 @@ type World struct {
 }
 
 func New(name string) *World {
-	return &World{
+	w := &World{
 		Name:   name,
 		mu:     &sync.RWMutex{},
 		chunks: make(map[string]*Chunk),
 	}
+	go w.runChunkUnloader()
+	return w
 }
 
 // Gets a chunk in the world and if it doesn't exist loads a new empty chunk in to memory
 func (w *World) GetChunk(x int32, z int32) *Chunk {
 	w.mu.RLock()
+
 	key := GetChunkKey(x, z).String()
 	if w.chunks[key] == nil {
 		w.mu.RUnlock()
@@ -40,6 +44,15 @@ func (w *World) GetChunk(x int32, z int32) *Chunk {
 	return chunk
 }
 
+// Gets a chunk if it exists or if it doesn't returns nil
+func (w *World) GetChunkOrNil(x int32, z int32) *Chunk {
+	w.mu.RLock()
+	key := GetChunkKey(x, z).String()
+	chunk := w.chunks[key]
+	w.mu.RUnlock()
+	return chunk
+}
+
 // Gets a chunk in the world in packet format without having to load air chunks
 func (w *World) GetChunkData(x int32, z int32) *protocol.CChunkData {
 	w.mu.RLock()
@@ -48,6 +61,7 @@ func (w *World) GetChunkData(x int32, z int32) *protocol.CChunkData {
 		chunkData := *AirChunk
 		chunkData.ChunkX = x
 		chunkData.ChunkZ = z
+		w.mu.RUnlock()
 		return &chunkData
 	}
 	chunk := w.chunks[key]
@@ -77,4 +91,25 @@ type ChunkKey struct {
 
 func (key *ChunkKey) String() string {
 	return fmt.Sprint(key.X) + "," + fmt.Sprint(key.Z)
+}
+
+// Routinely unloads empty chunks
+func (w *World) runChunkUnloader() {
+	for {
+		time.Sleep(time.Second * 30)
+
+		w.mu.RLock()
+		chunks := w.chunks
+		w.mu.RUnlock()
+
+		for key, chunk := range chunks {
+			chunk.mu.RLock()
+			if chunk.IsEmpty && len(chunk.entitiesInChunk) == 0 {
+				w.mu.Lock()
+				delete(w.chunks, key)
+				w.mu.Unlock()
+			}
+			chunk.mu.RUnlock()
+		}
+	}
 }

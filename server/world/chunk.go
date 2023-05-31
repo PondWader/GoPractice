@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sync"
 
+	server_interfaces "github.com/PondWader/GoPractice/interfaces/server"
 	"github.com/PondWader/GoPractice/protocol"
 )
 
@@ -16,13 +17,18 @@ type Chunk struct {
 	sections [16]*ChunkSection
 	X        int32
 	Z        int32
+
+	entitiesInChunk map[int32]server_interfaces.Entity
+	IsEmpty         bool // If true, the chunk is fine to unload if no entities are in it
 }
 
 func NewChunk(x int32, z int32) *Chunk {
 	return &Chunk{
-		mu: &sync.RWMutex{},
-		X:  x,
-		Z:  z,
+		mu:              &sync.RWMutex{},
+		X:               x,
+		Z:               z,
+		entitiesInChunk: make(map[int32]server_interfaces.Entity),
+		IsEmpty:         true,
 	}
 }
 
@@ -52,6 +58,7 @@ func (c *Chunk) SetBlock(x int, y int, z int, blockType uint8) *Chunk {
 
 	c.mu.Lock()
 	section.blocks[getBlockIndex(x, y, z)] = uint16(blockType << 4)
+	c.IsEmpty = false
 	c.mu.Unlock()
 
 	return c
@@ -70,7 +77,7 @@ func (c *Chunk) SetState(x int, y int, z int, state uint8) {
 	c.mu.Unlock()
 }
 
-// Massive thanks to GlowstoneMC for the code this is based off
+// Thanks to the GlowstoneMC project for the code this is based off
 // https://github.com/GlowstoneMC/Glowstone/blob/d3ed79ea7d284df1d2cd1945bf53d5652962a34f/src/main/java/net/glowstone/GlowChunk.java#L673
 func (c *Chunk) ToFormat() *protocol.CChunkData {
 	c.mu.RLock()
@@ -166,4 +173,17 @@ func ChunkFromSave(x int32, z int32, data []byte) *Chunk {
 
 func (c *Chunk) getKey() string {
 	return fmt.Sprint(c.X) + "," + fmt.Sprint(c.Z)
+}
+
+func (c *Chunk) AddEntity(entityId int32, entity server_interfaces.Entity) {
+	c.mu.Lock()
+	c.entitiesInChunk[entityId] = entity
+	c.mu.Unlock()
+}
+
+func (c *Chunk) GetEntities() map[int32]server_interfaces.Entity {
+	c.mu.RLock()
+	entities := c.entitiesInChunk
+	c.mu.RUnlock()
+	return entities
 }

@@ -49,6 +49,10 @@ func Serialize(format interface{}) []byte {
 			data = append(data, value.(uint8))
 		case "Byte":
 			data = append(data, uint8(value.(int8)))
+		case "Short":
+			bytes := make([]byte, 2)
+			binary.BigEndian.PutUint16(bytes, uint16(value.(int16)))
+			data = append(data, bytes...)
 		case "UnsignedShort":
 			bytes := make([]byte, 2)
 			binary.BigEndian.PutUint16(bytes, value.(uint16))
@@ -76,6 +80,10 @@ func Serialize(format interface{}) []byte {
 			for _, item := range t {
 				data = append(data, Serialize(item)...)
 			}
+		case "FixedPoint":
+			bytes := make([]byte, 4)
+			binary.BigEndian.PutUint32(bytes, uint32(value.(float64)*32))
+			data = append(data, bytes...)
 		default:
 			utils.Error("Cannot serialize value of type", valueType)
 		}

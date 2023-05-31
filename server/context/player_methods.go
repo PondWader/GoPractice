@@ -1,9 +1,9 @@
 package context
 
 import (
+	server_interfaces "github.com/PondWader/GoPractice/interfaces/server"
 	"github.com/PondWader/GoPractice/protocol"
 	"github.com/PondWader/GoPractice/server/structs"
-	"github.com/PondWader/GoPractice/server/world"
 )
 
 func (p *ContextPlayer) Teleport(l *structs.Location) {
@@ -20,36 +20,42 @@ func (p *ContextPlayer) Teleport(l *structs.Location) {
 	p.Mu.Unlock()
 }
 
-func (p *ContextPlayer) streamChunks() {
+func (p *ContextPlayer) Type() string {
+	return "player"
+}
+
+func (p *ContextPlayer) SpawnEntityForClient(client *protocol.ProtocolClient) {
+	client.WritePacket(0x0C, protocol.Serialize(&protocol.CSpawnPlayerPacket{
+		EntityID:    int(p.EntityId),
+		UUID:        p.Client.Uuid,
+		X:           p.Position.X,
+		Y:           p.Position.Y,
+		Z:           p.Position.Z,
+		Yaw:         p.Position.GetYawAngle(),
+		Pitch:       p.Position.GetPitchAngle(),
+		CurrentItem: 0,
+		Metadata:    []byte{0, 0x08, 0x7F},
+	}))
+}
+
+func (p *ContextPlayer) AddEntityToView(entityId int32, entity server_interfaces.Entity) {
 	p.Mu.Lock()
-	centralChunkX := p.Position.GetBlockX() >> 4
-	centralChunkZ := p.Position.GetBlockZ() >> 4
-	viewDistance := int32(p.Context.config.ViewDistance)
+	p.EntitiesInView[entityId] = entity
+	entity.SpawnEntityForClient(p.Client)
+	p.Mu.Unlock()
+}
 
-	chunksToBeUnloaded := p.loadedChunks
-	p.loadedChunks = make(map[string]*world.ChunkKey)
+func (p *ContextPlayer) RemoveEntityFromView(entityId int32, removalTriggeredBySelf bool) {
+	p.Mu.Lock()
+	delete(p.EntitiesInView, entityId)
 
-	for x := (centralChunkX - viewDistance); x <= (centralChunkX + viewDistance); x++ {
-		for z := (centralChunkZ - viewDistance); z <= (centralChunkZ + viewDistance); z++ {
-			key := world.GetChunkKey(x, z)
-			keyStr := key.String()
-
-			if chunksToBeUnloaded[keyStr] != nil {
-				delete(chunksToBeUnloaded, keyStr)
-				p.loadedChunks[keyStr] = key
-				continue
-			}
-
-			p.loadedChunks[keyStr] = key
-			chunkData := p.Context.World.GetChunkData(x, z)
-			p.Client.WritePacket(0x21, protocol.Serialize(chunkData))
-		}
+	if removalTriggeredBySelf == false {
+		p.Client.WritePacket(0x13, protocol.Serialize(&protocol.CDestroyEntitiesPacket{
+			Count: 1,
+			EntityIDs: []*protocol.EntityID{{
+				Id: int(entityId),
+			}},
+		}))
 	}
-
-	for _, key := range chunksToBeUnloaded {
-		chunkData := world.GetEmptyChunk(key.X, key.Z)
-		p.Client.WritePacket(0x21, protocol.Serialize(chunkData))
-	}
-
 	p.Mu.Unlock()
 }
