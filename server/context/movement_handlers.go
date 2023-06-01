@@ -136,7 +136,9 @@ func (p *ContextPlayer) handlePositionChange(newX float64, newY float64, newZ fl
 	newChunkZ := p.Position.GetBlockZ() >> 4
 	if int32(oldX)>>4 != newChunkX || int32(oldZ)>>4 != newChunkZ {
 		chunk := p.Context.World.GetChunk(newChunkX, newChunkZ)
+		p.Context.World.GetChunk(p.currentChunk.X, p.currentChunk.Z).RemoveEntity(p.EntityId)
 		chunk.AddEntity(p.EntityId, p)
+		p.currentChunk = chunk.GetKey()
 		p.Mu.Unlock()
 
 		p.streamChunks()

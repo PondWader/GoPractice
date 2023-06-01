@@ -27,6 +27,7 @@ type ContextPlayer struct {
 	Position     *structs.Location
 	Mu           *sync.Mutex
 	loadedChunks map[string]*world.ChunkKey
+	currentChunk *world.ChunkKey
 	Context      *Context
 
 	DisplayedSkinParts uint8
@@ -61,7 +62,9 @@ func (c *Context) AddPlayer(client *protocol.ProtocolClient, entityId int32, mu 
 		}
 	}
 	p.streamChunks()
-	p.Context.World.GetChunk(p.Position.GetBlockX()>>4, p.Position.GetBlockZ()>>4).AddEntity(p.EntityId, p)
+	currentChunk := p.Context.World.GetChunk(p.Position.GetBlockX()>>4, p.Position.GetBlockZ()>>4)
+	currentChunk.AddEntity(p.EntityId, p)
+	p.currentChunk = currentChunk.GetKey()
 	p.updateViewedEntities()
 
 	p.Teleport(&structs.Location{
@@ -87,6 +90,20 @@ func (p *ContextPlayer) loadHandlers() {
 
 func (c *Context) RemovePlayer(entityId int32) {
 	c.Mu.Lock()
+	p := c.players[entityId]
+	if p == nil {
+		return
+	}
 	delete(c.players, entityId)
-	c.Mu.Lock()
+	c.Mu.Unlock()
+
+	p.Mu.Lock()
+	if chunk := c.World.GetChunkOrNil(p.currentChunk.X, p.currentChunk.Z); chunk != nil {
+		chunk.RemoveEntity(entityId)
+	}
+
+	for _, entity := range p.EntitiesInView {
+		entity.RemoveEntityFromView(entityId, false)
+	}
+	p.Mu.Unlock()
 }

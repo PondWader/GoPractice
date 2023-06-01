@@ -171,8 +171,8 @@ func ChunkFromSave(x int32, z int32, data []byte) *Chunk {
 	return chunk
 }
 
-func (c *Chunk) getKey() string {
-	return fmt.Sprint(c.X) + "," + fmt.Sprint(c.Z)
+func (c *Chunk) GetKey() *ChunkKey {
+	return GetChunkKey(c.X, c.Z)
 }
 
 func (c *Chunk) AddEntity(entityId int32, entity server_interfaces.Entity) {
@@ -181,6 +181,11 @@ func (c *Chunk) AddEntity(entityId int32, entity server_interfaces.Entity) {
 	c.mu.Unlock()
 }
 
+func (c *Chunk) RemoveEntity(entityId int32) {
+	c.mu.Lock()
+	delete(c.entitiesInChunk, entityId)
+	c.mu.Unlock()
+}
 func (c *Chunk) GetEntities() map[int32]server_interfaces.Entity {
 	c.mu.RLock()
 	entities := c.entitiesInChunk

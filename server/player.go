@@ -62,6 +62,9 @@ func (p *Player) handleEnd() {
 	delete(p.server.Players, p.client.Uuid.String())
 	p.currentContext.RemovePlayer(p.entityId)
 	p.server.Mu.Unlock()
+
+	p.server.Broadcast("§e"+p.client.Username+" has left the server.", 1)
+
 }
 
 func (p *Player) loadInPlayer() {
@@ -96,6 +99,8 @@ func (p *Player) loadInPlayer() {
 
 	p.loadPlayerList()
 	p.addToPlayerlist()
+
+	p.server.Broadcast("§e"+p.client.Username+" has joined the server.", 1)
 	p.currentContext.AddPlayer(p.client, p.entityId, p.mu)
 }
 
