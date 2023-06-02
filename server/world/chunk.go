@@ -114,7 +114,7 @@ func (c *Chunk) ToFormat() *protocol.CChunkData {
 		}
 		//Block data
 		for _, block := range section.blocks {
-			// Write the uint16 value as big endian
+			// Write the uint16 value as little endian
 			data[pos] = byte(block & 0xff)
 			data[pos+1] = byte(block >> 8)
 			pos += 2

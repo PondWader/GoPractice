@@ -171,6 +171,11 @@ type CEntityTeleportPacket struct {
 	OnGround bool  `type:"Boolean"`
 }
 
+type CEntityHeadRotationPacket struct {
+	EntityID int   `type:"VarInt"`
+	Yaw      uint8 `type:"UnsignedByte"`
+}
+
 /*
 	Serverbound packets
 */

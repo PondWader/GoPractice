@@ -150,4 +150,8 @@ func (p *ContextPlayer) handlePositionChange(newX float64, newY float64, newZ fl
 
 func (p *ContextPlayer) handleDirectionChange(newYaw float32, newPitch float32) {
 	p.Position.SetDirection(newYaw, newPitch)
+	p.sendToPlayersInView(0x19, protocol.Serialize(&protocol.CEntityHeadRotationPacket{
+		EntityID: int(p.EntityId),
+		Yaw:      p.Position.GetYawAngle(),
+	}))
 }
