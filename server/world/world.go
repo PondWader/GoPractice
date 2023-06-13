@@ -33,7 +33,7 @@ func (w *World) GetChunk(x int32, z int32) *Chunk {
 	key := GetChunkKey(x, z).String()
 	if w.chunks[key] == nil {
 		w.mu.RUnlock()
-		chunk := NewChunk(0, 0).SetBlock(0, 0, 0, 0) // We set a block to air so clients accept the chunk as it has data (empty chunks are used to tell the client to unload the chunk)
+		chunk := NewChunk(x, z).SetBlock(0, 0, 0, 0) // We set a block to air so clients accept the chunk as it has data (empty chunks are used to tell the client to unload the chunk)
 		w.mu.Lock()
 		w.chunks[key] = chunk
 		w.mu.Unlock()
@@ -61,7 +61,6 @@ func (w *World) GetChunkData(x int32, z int32) *protocol.CChunkData {
 		chunkData := *AirChunk
 		chunkData.ChunkX = x
 		chunkData.ChunkZ = z
-		w.mu.RUnlock()
 		return &chunkData
 	}
 	chunk := w.chunks[key]
