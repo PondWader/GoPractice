@@ -61,6 +61,7 @@ func (w *World) GetChunkData(x int32, z int32) *protocol.CChunkData {
 		chunkData := *AirChunk
 		chunkData.ChunkX = x
 		chunkData.ChunkZ = z
+		w.mu.RUnlock()
 		return &chunkData
 	}
 	chunk := w.chunks[key]
