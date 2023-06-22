@@ -7,5 +7,5 @@ import (
 )
 
 func New(config *config.ServerConfiguration) *context.Context {
-	return context.New(world.New("lobby"), config)
+	return context.New(world.New("lobby"), config, true)
 }

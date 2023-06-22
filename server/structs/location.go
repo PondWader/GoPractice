@@ -54,3 +54,11 @@ func (l *Location) GetPitchAngle() uint8 {
 func (l *Location) Clone() *Location {
 	return &Location{l.X, l.Y, l.Z, l.Yaw, l.Pitch}
 }
+
+func LocationFromPositionFormat(val int64) *Location {
+	return &Location{
+		X: float64(val >> 38),
+		Y: float64(val << 52 >> 52),
+		Z: float64(val << 26 >> 38),
+	}
+}

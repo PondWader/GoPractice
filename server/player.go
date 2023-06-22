@@ -90,11 +90,6 @@ func (p *Player) loadInPlayer() {
 		Slot: 0,
 	}))
 
-	p.client.WritePacket(0x03, protocol.Serialize(&protocol.CTimeUpdate{
-		WorldAge:  0,
-		TimeOfDay: 6000,
-	}))
-
 	p.mu.Unlock()
 
 	p.loadPlayerList()

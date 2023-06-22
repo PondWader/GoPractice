@@ -42,6 +42,14 @@ func (client *ProtocolClient) deserialize(data []byte, format interface{}) error
 			}
 			field.Set(reflect.ValueOf(v))
 
+		case "Byte":
+			v, err := deserializer.readBytes(1)
+			if err != nil {
+				client.Disconnect(err.Error())
+				return err
+			}
+			field.Set(reflect.ValueOf(int8(v[0])))
+
 		case "UnsignedShort":
 			v, err := deserializer.readUnsignedShort()
 			if err != nil {
@@ -49,6 +57,34 @@ func (client *ProtocolClient) deserialize(data []byte, format interface{}) error
 				return err
 			}
 			field.Set(reflect.ValueOf(v))
+
+		case "Long":
+			v, err := deserializer.readLong()
+			if err != nil {
+				client.Disconnect(err.Error())
+				return err
+			}
+			field.Set(reflect.ValueOf(v))
+
+		case "UnsignedLong":
+			v, err := deserializer.readUnsignedLong()
+			if err != nil {
+				client.Disconnect(err.Error())
+				return err
+			}
+			field.Set(reflect.ValueOf(v))
+
+		case "Position":
+			v, err := deserializer.readUnsignedLong()
+			if err != nil {
+				client.Disconnect(err.Error())
+				return err
+			}
+
+			x := int32(v >> 38)
+			y := int32((v >> 26) & 0xFFF)
+			z := int32((v << 38) >> 38)
+			field.Set(reflect.ValueOf(&Position{x, y, z}))
 
 		case "ByteArray":
 			lengthField := formatType.Field(i).Tag.Get("length")
@@ -145,6 +181,22 @@ func (deserializer *deserializer) readUnsignedShort() (uint16, error) {
 		return 0, err
 	}
 	return binary.BigEndian.Uint16(bytes), nil
+}
+
+func (deserializer *deserializer) readLong() (int64, error) {
+	bytes, err := deserializer.readBytes(8)
+	if err != nil {
+		return 0, err
+	}
+	return int64(binary.BigEndian.Uint64(bytes)), nil
+}
+
+func (deserializer *deserializer) readUnsignedLong() (uint64, error) {
+	bytes, err := deserializer.readBytes(8)
+	if err != nil {
+		return 0, err
+	}
+	return binary.BigEndian.Uint64(bytes), nil
 }
 
 func (deserializer *deserializer) readDouble() (float64, error) {

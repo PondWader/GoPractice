@@ -206,6 +206,11 @@ type SPlayerPositionAndLookPacket struct {
 	OnGround bool    `type:"Boolean"`
 }
 
+type SPlayerBlockPlacement struct {
+	Location *Position `type:"Position"`
+	Face     int8      `type:"Byte"`
+}
+
 func (client *ProtocolClient) play() {
 	client.state = "play"
 
@@ -231,6 +236,8 @@ func (client *ProtocolClient) BeginPacketReader() {
 			packetFormat = &SPlayerLookPacket{}
 		case 0x06:
 			packetFormat = &SPlayerPositionAndLookPacket{}
+		case 0x08:
+			packetFormat = &SPlayerBlockPlacement{}
 		default:
 			//utils.Error("Received unrecognized packet of ID", packetId, "from", client.Username)
 			continue

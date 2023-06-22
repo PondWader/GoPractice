@@ -15,10 +15,11 @@ import (
 // The context handles showing players to each other and chunk loading and provides utilities to be built on top of
 
 type Context struct {
-	Mu      *sync.RWMutex
-	World   *world.World
-	players map[int32]*ContextPlayer
-	config  *config.ServerConfiguration
+	Mu       *sync.RWMutex
+	World    *world.World
+	players  map[int32]*ContextPlayer
+	config   *config.ServerConfiguration
+	building bool
 }
 
 type ContextPlayer struct {
@@ -36,12 +37,13 @@ type ContextPlayer struct {
 	EntitiesInView map[int32]server_interfaces.Entity
 }
 
-func New(world *world.World, config *config.ServerConfiguration) *Context {
+func New(world *world.World, config *config.ServerConfiguration, building bool) *Context {
 	return &Context{
-		Mu:      &sync.RWMutex{},
-		players: make(map[int32]*ContextPlayer),
-		config:  config,
-		World:   world,
+		Mu:       &sync.RWMutex{},
+		players:  make(map[int32]*ContextPlayer),
+		config:   config,
+		World:    world,
+		building: building,
 	}
 }
 
@@ -85,6 +87,10 @@ func (p *ContextPlayer) loadHandlers() {
 	p.Client.SetPacketHandler(&protocol.SPlayerPositionPacket{}, p.handlePlayerPositionUpdate)
 	p.Client.SetPacketHandler(&protocol.SPlayerLookPacket{}, p.handlePlayerLookUpdate)
 	p.Client.SetPacketHandler(&protocol.SPlayerPositionAndLookPacket{}, p.handlePlayerPositionAndLookUpdate)
+
+	if p.Context.building {
+		p.Client.SetPacketHandler(&protocol.SPlayerBlockPlacement{}, p.handleBlockPlace)
+	}
 	p.Mu.Unlock()
 }
 
