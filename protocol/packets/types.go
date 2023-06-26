@@ -1,6 +1,8 @@
-package protocol
+package packets
 
 import "github.com/PondWader/GoPractice/utils/nbt"
+
+type PacketId uint8
 
 type Position struct {
 	X int32

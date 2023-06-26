@@ -3,13 +3,14 @@ package context
 import (
 	server_interfaces "github.com/PondWader/GoPractice/interfaces/server"
 	"github.com/PondWader/GoPractice/protocol"
+	"github.com/PondWader/GoPractice/protocol/packets"
 	"github.com/PondWader/GoPractice/server/structs"
 )
 
 func (p *ContextPlayer) Teleport(l *structs.Location) {
 	p.Mu.Lock()
 	p.Position = l
-	p.Client.WritePacket(0x08, protocol.Serialize(&protocol.CSetPlayerPositionAndLook{
+	p.Client.WritePacket(packets.CSetPlayerPositionAndLookId, protocol.Serialize(&protocol.CSetPlayerPositionAndLook{
 		X:     l.X,
 		Y:     l.Y,
 		Z:     l.Z,
@@ -25,7 +26,7 @@ func (p *ContextPlayer) Type() string {
 }
 
 func (p *ContextPlayer) SpawnEntityForClient(client *protocol.ProtocolClient) {
-	client.WritePacket(0x0C, protocol.Serialize(&protocol.CSpawnPlayerPacket{
+	client.WritePacket(packets.CSpawnPlayerId, protocol.Serialize(&protocol.CSpawnPlayerPacket{
 		EntityID:    int(p.EntityId),
 		UUID:        p.Client.Uuid,
 		X:           p.Position.X,
@@ -50,7 +51,7 @@ func (p *ContextPlayer) RemoveEntityFromView(entityId int32, removalTriggeredByS
 	delete(p.EntitiesInView, entityId)
 
 	if removalTriggeredBySelf == false {
-		p.Client.WritePacket(0x13, protocol.Serialize(&protocol.CDestroyEntitiesPacket{
+		p.Client.WritePacket(packets.CDestroyEntitiesId, protocol.Serialize(&protocol.CDestroyEntitiesPacket{
 			Count: 1,
 			EntityIDs: []*protocol.EntityID{{
 				Id: int(entityId),

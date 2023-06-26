@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/PondWader/GoPractice/protocol"
+	"github.com/PondWader/GoPractice/protocol/packets"
 	"github.com/PondWader/GoPractice/server/context"
 )
 
@@ -70,7 +71,7 @@ func (p *Player) handleEnd() {
 func (p *Player) loadInPlayer() {
 	p.mu.Lock()
 
-	p.client.WritePacket(0x01, protocol.Serialize(&protocol.CJoinGamePacket{
+	p.client.WritePacket(packets.CJoinGameId, protocol.Serialize(&protocol.CJoinGamePacket{
 		EntityID:         p.entityId,
 		GameMode:         1, //Temp: creative // Adventure
 		Dimension:        0,
@@ -80,13 +81,13 @@ func (p *Player) loadInPlayer() {
 		ReducedDebugInfo: false,
 	}))
 
-	p.client.WritePacket(0x39, protocol.Serialize(&protocol.CPlayerAbilitiesPacket{
+	p.client.WritePacket(packets.CPlayAbilitiesId, protocol.Serialize(&protocol.CPlayerAbilitiesPacket{
 		Flags:        0x04,
 		FlyingSpeed:  0.05,
 		WalkingSpeed: 0.1,
 	}))
 
-	p.client.WritePacket(0x09, protocol.Serialize(&protocol.CHeldItemChangePacket{
+	p.client.WritePacket(packets.CHeldItemChangeId, protocol.Serialize(&protocol.CHeldItemChangePacket{
 		Slot: 0,
 	}))
 
@@ -115,7 +116,7 @@ func (p *Player) keepAlive() {
 		}
 
 		p.lastSentKeepAlive = int(rand.Int31())
-		p.client.WritePacket(0x00, protocol.Serialize(&protocol.KeepAlivePacket{
+		p.client.WritePacket(packets.CKeepAliveId, protocol.Serialize(&protocol.KeepAlivePacket{
 			KeepAliveID: p.lastSentKeepAlive,
 		}))
 		p.mu.Unlock()

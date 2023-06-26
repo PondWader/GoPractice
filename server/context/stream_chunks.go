@@ -2,6 +2,7 @@ package context
 
 import (
 	"github.com/PondWader/GoPractice/protocol"
+	"github.com/PondWader/GoPractice/protocol/packets"
 	"github.com/PondWader/GoPractice/server/world"
 )
 
@@ -27,13 +28,13 @@ func (p *ContextPlayer) streamChunks() {
 
 			p.loadedChunks[keyStr] = key
 			chunkData := p.Context.World.GetChunkData(x, z)
-			p.Client.WritePacket(0x21, protocol.Serialize(chunkData))
+			p.Client.WritePacket(packets.CChunkDataId, protocol.Serialize(chunkData))
 		}
 	}
 
 	for _, key := range chunksToBeUnloaded {
 		chunkData := world.GetEmptyChunk(key.X, key.Z)
-		p.Client.WritePacket(0x21, protocol.Serialize(chunkData))
+		p.Client.WritePacket(packets.CChunkDataId, protocol.Serialize(chunkData))
 	}
 
 	p.Mu.Unlock()

@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/PondWader/GoPractice/interfaces"
+	"github.com/PondWader/GoPractice/protocol/packets"
 	"github.com/PondWader/GoPractice/utils"
 	"github.com/google/uuid"
 )
@@ -81,8 +82,8 @@ func (client *ProtocolClient) Disconnect(reason string) {
 	}
 }
 
-func (client *ProtocolClient) WritePacket(packetId int, data []byte) error {
-	packetIdVarInt := writeVarInt(packetId)
+func (client *ProtocolClient) WritePacket(packetId packets.PacketId, data []byte) error {
+	packetIdVarInt := writeVarInt(int(packetId))
 	packetLengthVarInt := writeVarInt(len(packetIdVarInt) + len(data))
 
 	packetData := append(packetIdVarInt, data...)

@@ -12,6 +12,7 @@ import (
 	"github.com/PondWader/GoPractice/config"
 	"github.com/PondWader/GoPractice/database"
 	"github.com/PondWader/GoPractice/protocol"
+	"github.com/PondWader/GoPractice/protocol/packets"
 	"github.com/PondWader/GoPractice/server/context"
 	"github.com/PondWader/GoPractice/server/lobby"
 	"github.com/PondWader/GoPractice/utils"
@@ -57,7 +58,7 @@ func New(cfg config.ServerConfiguration, version string) *Server {
 func (s *Server) Broadcast(msg string, position int8) {
 	utils.Info(msg)
 
-	s.BroadcastPacket(0x02, protocol.Serialize(&protocol.CChatMessage{
+	s.BroadcastPacket(packets.CChatMessageId, protocol.Serialize(&protocol.CChatMessage{
 		Data: protocol.ChatComponent{
 			Text: msg,
 		},
@@ -65,7 +66,7 @@ func (s *Server) Broadcast(msg string, position int8) {
 	}))
 }
 
-func (s *Server) BroadcastPacket(packetId int, data []byte) {
+func (s *Server) BroadcastPacket(packetId packets.PacketId, data []byte) {
 	s.Mu.RLock()
 	players := s.Players
 	s.Mu.RUnlock()

@@ -3,6 +3,7 @@ package context
 import (
 	server_interfaces "github.com/PondWader/GoPractice/interfaces/server"
 	"github.com/PondWader/GoPractice/protocol"
+	"github.com/PondWader/GoPractice/protocol/packets"
 )
 
 func (p *ContextPlayer) updateViewedEntities() {
@@ -64,7 +65,7 @@ func (p *ContextPlayer) updateViewedEntities() {
 			i++
 		}
 
-		p.Client.WritePacket(0x13, protocol.Serialize(destroyEntitiesPacket))
+		p.Client.WritePacket(packets.CDestroyEntitiesId, protocol.Serialize(destroyEntitiesPacket))
 	}
 
 	p.Mu.Unlock()

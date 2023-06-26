@@ -2,9 +2,10 @@ package context
 
 import (
 	"github.com/PondWader/GoPractice/protocol"
+	"github.com/PondWader/GoPractice/protocol/packets"
 )
 
-func (p *ContextPlayer) sendToPlayersInView(packetId int, data []byte) {
+func (p *ContextPlayer) sendToPlayersInView(packetId packets.PacketId, data []byte) {
 	for _, entity := range p.EntitiesInView {
 		if entity.Type() == "player" {
 			player := entity.(*ContextPlayer)
@@ -41,7 +42,7 @@ func (p *ContextPlayer) handlePlayerPositionUpdate(packet interface{}) {
 	MovementIsWithinLimits := diffX < 4 && diffY < 4 && diffZ < 4 && diffX > -4 && diffY > -4 && diffZ > -4
 
 	if GroundStateIsSame && MovementIsWithinLimits {
-		p.sendToPlayersInView(0x15, protocol.Serialize(&protocol.CEntityRelativeMovePacket{
+		p.sendToPlayersInView(packets.CEntityRelativeMoveId, protocol.Serialize(&protocol.CEntityRelativeMovePacket{
 			EntityID: int(p.EntityId),
 			DeltaX:   int8(playerPositionPacket.X*32) - int8(oldX*32),
 			DeltaY:   int8(playerPositionPacket.Y*32) - int8(oldY*32),
@@ -50,7 +51,7 @@ func (p *ContextPlayer) handlePlayerPositionUpdate(packet interface{}) {
 		}))
 	} else {
 		p.IsOnGround = playerPositionPacket.OnGround
-		p.sendToPlayersInView(0x18, protocol.Serialize(&protocol.CEntityTeleportPacket{
+		p.sendToPlayersInView(packets.CEntityTeleportId, protocol.Serialize(&protocol.CEntityTeleportPacket{
 			EntityID: int(p.EntityId),
 			X:        int32(p.Position.X * 32),
 			Y:        int32(p.Position.Y * 32),
@@ -70,7 +71,7 @@ func (p *ContextPlayer) handlePlayerLookUpdate(packet interface{}) {
 
 	p.handleDirectionChange(playerLookUpdatePacket.Yaw, playerLookUpdatePacket.Pitch)
 
-	p.sendToPlayersInView(0x16, protocol.Serialize(&protocol.CEntityLookPacket{
+	p.sendToPlayersInView(packets.CEntityLookId, protocol.Serialize(&protocol.CEntityLookPacket{
 		EntityID: int(p.EntityId),
 		Yaw:      p.Position.GetYawAngle(),
 		Pitch:    p.Position.GetPitchAngle(),
@@ -100,7 +101,7 @@ func (p *ContextPlayer) handlePlayerPositionAndLookUpdate(packet interface{}) {
 	MovementIsWithinLimits := diffX < 4 && diffY < 4 && diffZ < 4 && diffX > -4 && diffY > -4 && diffZ > -4
 
 	if GroundStateIsSame && MovementIsWithinLimits {
-		p.sendToPlayersInView(0x17, protocol.Serialize(&protocol.CEntityLookAndRelativeMovePacket{
+		p.sendToPlayersInView(packets.CEntityLookAndRelativeMoveId, protocol.Serialize(&protocol.CEntityLookAndRelativeMovePacket{
 			EntityID: int(p.EntityId),
 			DeltaX:   int8(playerPositionAndLookUpdatePacket.X*32) - int8(oldX*32),
 			DeltaY:   int8(playerPositionAndLookUpdatePacket.Y*32) - int8(oldY*32),
@@ -111,7 +112,7 @@ func (p *ContextPlayer) handlePlayerPositionAndLookUpdate(packet interface{}) {
 		}))
 	} else {
 		p.IsOnGround = playerPositionAndLookUpdatePacket.OnGround
-		p.sendToPlayersInView(0x18, protocol.Serialize(&protocol.CEntityTeleportPacket{
+		p.sendToPlayersInView(packets.CEntityTeleportId, protocol.Serialize(&protocol.CEntityTeleportPacket{
 			EntityID: int(p.EntityId),
 			X:        int32(p.Position.X * 32),
 			Y:        int32(p.Position.Y * 32),
@@ -150,7 +151,7 @@ func (p *ContextPlayer) handlePositionChange(newX float64, newY float64, newZ fl
 
 func (p *ContextPlayer) handleDirectionChange(newYaw float32, newPitch float32) {
 	p.Position.SetDirection(newYaw, newPitch)
-	p.sendToPlayersInView(0x19, protocol.Serialize(&protocol.CEntityHeadRotationPacket{
+	p.sendToPlayersInView(packets.CEntityHeadRotationId, protocol.Serialize(&protocol.CEntityHeadRotationPacket{
 		EntityID: int(p.EntityId),
 		Yaw:      p.Position.GetYawAngle(),
 	}))

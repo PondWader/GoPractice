@@ -2,6 +2,7 @@ package server
 
 import (
 	"github.com/PondWader/GoPractice/protocol"
+	"github.com/PondWader/GoPractice/protocol/packets"
 )
 
 func (p *Player) loadPlayerList() {
@@ -26,13 +27,13 @@ func (p *Player) loadPlayerList() {
 	}
 
 	p.mu.Lock()
-	p.client.WritePacket(0x38, protocol.Serialize(&protocol.CPLayerListItemPacket{
+	p.client.WritePacket(packets.CPlayerListItemId, protocol.Serialize(&protocol.CPLayerListItemPacket{
 		Action:          0,
 		NumberOfPlayers: len(playerData),
 		Data:            playerData,
 	}))
 
-	p.client.WritePacket(0x47, protocol.Serialize(&protocol.CPlayerListHeaderAndFooter{
+	p.client.WritePacket(packets.CPlayerListHeaderAndFooterId, protocol.Serialize(&protocol.CPlayerListHeaderAndFooter{
 		Header: protocol.ChatComponent{
 			Text: "§b§lGoPractice §8v" + p.server.Version + "\n",
 		},
@@ -44,7 +45,7 @@ func (p *Player) loadPlayerList() {
 }
 
 func (p *Player) addToPlayerlist() {
-	p.server.BroadcastPacket(0x38, protocol.Serialize(&protocol.CPLayerListItemPacket{
+	p.server.BroadcastPacket(packets.CPlayerListItemId, protocol.Serialize(&protocol.CPLayerListItemPacket{
 		Action:          0,
 		NumberOfPlayers: 1,
 		Data: []*protocol.PlayerListActionAddPlayer{{
@@ -62,7 +63,7 @@ func (p *Player) addToPlayerlist() {
 }
 
 func (p *Player) removeFromPlayerlist() {
-	p.server.BroadcastPacket(0x38, protocol.Serialize(&protocol.CPLayerListItemPacket{
+	p.server.BroadcastPacket(packets.CPlayerListItemId, protocol.Serialize(&protocol.CPLayerListItemPacket{
 		Action:          4,
 		NumberOfPlayers: 1,
 		Data: []*protocol.PlayerListActionRemovePlayer{{
