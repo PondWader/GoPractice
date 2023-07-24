@@ -8,6 +8,7 @@ import (
 	"github.com/PondWader/GoPractice/protocol"
 	"github.com/PondWader/GoPractice/server/structs"
 	"github.com/PondWader/GoPractice/server/world"
+	"github.com/PondWader/GoPractice/utils"
 )
 
 // The context package is used to create each "context"
@@ -20,6 +21,7 @@ type Context struct {
 	players  map[int32]*ContextPlayer
 	config   *config.ServerConfiguration
 	building bool
+	Events   *utils.EventEmitter
 }
 
 type ContextPlayer struct {
@@ -44,6 +46,7 @@ func New(world *world.World, config *config.ServerConfiguration, building bool) 
 		config:   config,
 		World:    world,
 		building: building,
+		Events:   utils.NewEventEmitter(),
 	}
 }
 

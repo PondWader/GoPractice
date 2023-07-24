@@ -211,10 +211,14 @@ type SPlayerBlockPlacement struct {
 	Face     int8      `type:"Byte"`
 }
 
+type SPlayerDiggingId struct {
+	Status   int8      `type:"Byte"`
+	Location *Position `type:"Position"`
+	Face     int8      `type:"Byte"`
+}
+
 func (client *ProtocolClient) play() {
 	client.state = "play"
-
-	// Client gets returned, main will then create a new server player to wrap around it and then begin the packet listener
 }
 
 func (client *ProtocolClient) BeginPacketReader() {
@@ -239,7 +243,7 @@ func (client *ProtocolClient) BeginPacketReader() {
 		case 0x08:
 			packetFormat = &SPlayerBlockPlacement{}
 		default:
-			//utils.Error("Received unrecognized packet of ID", packetId, "from", client.Username)
+			// utils.Error("Received unrecognized packet of ID", packetId, "from", client.Username)
 			continue
 		}
 

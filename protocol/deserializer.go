@@ -83,7 +83,16 @@ func (client *ProtocolClient) deserialize(data []byte, format interface{}) error
 
 			x := int32(v >> 38)
 			y := int32((v >> 26) & 0xFFF)
-			z := int32((v << 38) >> 38)
+			z := int32(v << 38 >> 38)
+			if x >= int32(math.Pow(2, 25)) {
+				x -= int32(math.Pow(2, 26))
+			}
+			if y >= int32(math.Pow(2, 11)) {
+				y -= int32(math.Pow(2, 12))
+			}
+			if z >= int32(math.Pow(2, 25)) {
+				z -= int32(math.Pow(2, 26))
+			}
 			field.Set(reflect.ValueOf(&Position{x, y, z}))
 
 		case "ByteArray":
