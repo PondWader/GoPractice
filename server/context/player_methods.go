@@ -10,7 +10,7 @@ import (
 func (p *ContextPlayer) Teleport(l *structs.Location) {
 	p.Mu.Lock()
 	p.Position = l
-	p.Client.WritePacket(packets.CSetPlayerPositionAndLookId, protocol.Serialize(&protocol.CSetPlayerPositionAndLook{
+	p.Client.WritePacket(packets.CSetPlayerPositionAndLookId, protocol.Serialize(&packets.CSetPlayerPositionAndLook{
 		X:     l.X,
 		Y:     l.Y,
 		Z:     l.Z,
@@ -26,7 +26,7 @@ func (p *ContextPlayer) Type() string {
 }
 
 func (p *ContextPlayer) SpawnEntityForClient(client *protocol.ProtocolClient) {
-	client.WritePacket(packets.CSpawnPlayerId, protocol.Serialize(&protocol.CSpawnPlayerPacket{
+	client.WritePacket(packets.CSpawnPlayerId, protocol.Serialize(&packets.CSpawnPlayerPacket{
 		EntityID:    int(p.EntityId),
 		UUID:        p.Client.Uuid,
 		X:           p.Position.X,
@@ -51,9 +51,9 @@ func (p *ContextPlayer) RemoveEntityFromView(entityId int32, removalTriggeredByS
 	delete(p.EntitiesInView, entityId)
 
 	if removalTriggeredBySelf == false {
-		p.Client.WritePacket(packets.CDestroyEntitiesId, protocol.Serialize(&protocol.CDestroyEntitiesPacket{
+		p.Client.WritePacket(packets.CDestroyEntitiesId, protocol.Serialize(&packets.CDestroyEntitiesPacket{
 			Count: 1,
-			EntityIDs: []*protocol.EntityID{{
+			EntityIDs: []*packets.EntityID{{
 				Id: int(entityId),
 			}},
 		}))

@@ -47,14 +47,14 @@ func (p *ContextPlayer) updateViewedEntities() {
 	}
 
 	if len(entitiesToRemove) > 0 {
-		destroyEntitiesPacket := &protocol.CDestroyEntitiesPacket{
+		destroyEntitiesPacket := &packets.CDestroyEntitiesPacket{
 			Count:     len(entitiesToRemove),
-			EntityIDs: make([]*protocol.EntityID, len(entitiesToRemove)),
+			EntityIDs: make([]*packets.EntityID, len(entitiesToRemove)),
 		}
 
 		i := 0
 		for entityId, entity := range entitiesToRemove {
-			destroyEntitiesPacket.EntityIDs[i] = &protocol.EntityID{Id: int(entityId)}
+			destroyEntitiesPacket.EntityIDs[i] = &packets.EntityID{Id: int(entityId)}
 
 			p.Mu.Unlock()
 			p.RemoveEntityFromView(entityId, true)

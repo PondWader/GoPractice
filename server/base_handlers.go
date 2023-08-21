@@ -1,11 +1,11 @@
 package server
 
 import (
-	"github.com/PondWader/GoPractice/protocol"
+	"github.com/PondWader/GoPractice/protocol/packets"
 )
 
 func (p *Player) handleKeepAlive(packet interface{}) {
-	keepAlivePacket := packet.(*protocol.KeepAlivePacket)
+	keepAlivePacket := packet.(*packets.KeepAlivePacket)
 
 	p.mu.Lock()
 	p.lastReceivedKeepAlive = keepAlivePacket.KeepAliveID
@@ -13,7 +13,7 @@ func (p *Player) handleKeepAlive(packet interface{}) {
 }
 
 func (p *Player) handleChat(packet interface{}) {
-	chatPacket := packet.(*protocol.SChatPacket)
+	chatPacket := packet.(*packets.SChatPacket)
 
 	if len(chatPacket.Message) > 100 {
 		p.client.Disconnect("Chat message too long (> 100)")

@@ -115,7 +115,7 @@ func (client *ProtocolClient) WritePacket(packetId packets.PacketId, data []byte
 
 // Reads the packet ID and the decompressed & unencrypted data
 // This data can then be passed to the deserialize method with the packet structure to parse it
-func (client *ProtocolClient) readPacket() (int, []byte, error) {
+func (client *ProtocolClient) readPacket() (packets.PacketId, []byte, error) {
 	deserializer := client.newDeserializer(client.readBytes)
 
 	dataLength, _, err := deserializer.readVarInt()
@@ -169,10 +169,10 @@ func (client *ProtocolClient) readPacket() (int, []byte, error) {
 			}
 			decompressedLength -= bytesRead
 			if dataLength == 0 {
-				return packetId, []byte{}, nil
+				return packets.PacketId(packetId), []byte{}, nil
 			}
 
-			return packetId, data[bytesRead:], nil
+			return packets.PacketId(packetId), data[bytesRead:], nil
 		}
 	}
 
@@ -183,7 +183,7 @@ func (client *ProtocolClient) readPacket() (int, []byte, error) {
 	}
 	dataLength -= bytesRead
 	if dataLength == 0 {
-		return packetId, []byte{}, nil
+		return packets.PacketId(packetId), []byte{}, nil
 	}
 
 	packetData, err := client.readBytes(dataLength)
@@ -191,7 +191,7 @@ func (client *ProtocolClient) readPacket() (int, []byte, error) {
 		client.Disconnect(err.Error())
 		return 0, nil, err
 	}
-	return packetId, packetData, nil
+	return packets.PacketId(packetId), packetData, nil
 }
 
 func (client *ProtocolClient) readBytes(amount int) ([]byte, error) {

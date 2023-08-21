@@ -6,18 +6,18 @@ import (
 )
 
 func (p *Player) loadPlayerList() {
-	playerData := []*protocol.PlayerListActionAddPlayer{}
+	playerData := []*packets.PlayerListActionAddPlayer{}
 
 	p.server.Mu.RLock()
 	players := p.server.Players
 	p.server.Mu.RUnlock()
 
 	for _, player := range players {
-		playerData = append(playerData, &protocol.PlayerListActionAddPlayer{
+		playerData = append(playerData, &packets.PlayerListActionAddPlayer{
 			UUID:               player.client.Uuid,
 			Name:               player.client.Username,
 			NumberOfProperties: 1,
-			Properties: []*protocol.PlayerListPlayerProperties{{
+			Properties: []*packets.PlayerListPlayerProperties{{
 				Name:  "textures",
 				Value: player.client.Skin,
 			}},
@@ -27,17 +27,17 @@ func (p *Player) loadPlayerList() {
 	}
 
 	p.mu.Lock()
-	p.client.WritePacket(packets.CPlayerListItemId, protocol.Serialize(&protocol.CPLayerListItemPacket{
+	p.client.WritePacket(packets.CPlayerListItemId, protocol.Serialize(&packets.CPLayerListItemPacket{
 		Action:          0,
 		NumberOfPlayers: len(playerData),
 		Data:            playerData,
 	}))
 
-	p.client.WritePacket(packets.CPlayerListHeaderAndFooterId, protocol.Serialize(&protocol.CPlayerListHeaderAndFooter{
-		Header: protocol.ChatComponent{
+	p.client.WritePacket(packets.CPlayerListHeaderAndFooterId, protocol.Serialize(&packets.CPlayerListHeaderAndFooter{
+		Header: packets.ChatComponent{
 			Text: "§b§lGoPractice §8v" + p.server.Version + "\n",
 		},
-		Footer: protocol.ChatComponent{
+		Footer: packets.ChatComponent{
 			Text: "\n§3github.com/PondWader/GoPractice",
 		},
 	}))
@@ -45,14 +45,14 @@ func (p *Player) loadPlayerList() {
 }
 
 func (p *Player) addToPlayerlist() {
-	p.server.BroadcastPacket(packets.CPlayerListItemId, protocol.Serialize(&protocol.CPLayerListItemPacket{
+	p.server.BroadcastPacket(packets.CPlayerListItemId, protocol.Serialize(&packets.CPLayerListItemPacket{
 		Action:          0,
 		NumberOfPlayers: 1,
-		Data: []*protocol.PlayerListActionAddPlayer{{
+		Data: []*packets.PlayerListActionAddPlayer{{
 			UUID:               p.client.Uuid,
 			Name:               p.client.Username,
 			NumberOfProperties: 1,
-			Properties: []*protocol.PlayerListPlayerProperties{{
+			Properties: []*packets.PlayerListPlayerProperties{{
 				Name:  "textures",
 				Value: p.client.Skin,
 			}},
@@ -63,10 +63,10 @@ func (p *Player) addToPlayerlist() {
 }
 
 func (p *Player) removeFromPlayerlist() {
-	p.server.BroadcastPacket(packets.CPlayerListItemId, protocol.Serialize(&protocol.CPLayerListItemPacket{
+	p.server.BroadcastPacket(packets.CPlayerListItemId, protocol.Serialize(&packets.CPLayerListItemPacket{
 		Action:          4,
 		NumberOfPlayers: 1,
-		Data: []*protocol.PlayerListActionRemovePlayer{{
+		Data: []*packets.PlayerListActionRemovePlayer{{
 			UUID: p.client.Uuid,
 		}},
 	}))

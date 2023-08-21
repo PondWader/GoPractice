@@ -5,7 +5,7 @@ import (
 	"sync"
 
 	server_interfaces "github.com/PondWader/GoPractice/interfaces/server"
-	"github.com/PondWader/GoPractice/protocol"
+	"github.com/PondWader/GoPractice/protocol/packets"
 )
 
 type ChunkSection struct {
@@ -79,9 +79,9 @@ func (c *Chunk) SetState(x int, y int, z int, state uint8) {
 
 // Thanks to the GlowstoneMC project for the code this is based off
 // https://github.com/GlowstoneMC/Glowstone/blob/d3ed79ea7d284df1d2cd1945bf53d5652962a34f/src/main/java/net/glowstone/GlowChunk.java#L673
-func (c *Chunk) ToFormat() *protocol.CChunkData {
+func (c *Chunk) ToFormat() *packets.CChunkData {
 	c.mu.RLock()
-	chunkData := &protocol.CChunkData{
+	chunkData := &packets.CChunkData{
 		GroundUpContinuous: true,
 	}
 

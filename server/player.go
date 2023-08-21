@@ -49,8 +49,8 @@ func NewPlayer(client *protocol.ProtocolClient, server *Server) *Player {
 
 	client.SetEndHandler(p.handleEnd)
 
-	client.SetPacketHandler(&protocol.KeepAlivePacket{}, p.handleKeepAlive)
-	client.SetPacketHandler(&protocol.SChatPacket{}, p.handleChat)
+	client.SetPacketHandler(&packets.KeepAlivePacket{}, p.handleKeepAlive)
+	client.SetPacketHandler(&packets.SChatPacket{}, p.handleChat)
 	client.BeginPacketReader()
 
 	return p
@@ -71,7 +71,7 @@ func (p *Player) handleEnd() {
 func (p *Player) loadInPlayer() {
 	p.mu.Lock()
 
-	p.client.WritePacket(packets.CJoinGameId, protocol.Serialize(&protocol.CJoinGamePacket{
+	p.client.WritePacket(packets.CJoinGameId, protocol.Serialize(&packets.CJoinGamePacket{
 		EntityID:         p.entityId,
 		GameMode:         1, //Temp: creative // Adventure
 		Dimension:        0,
@@ -81,13 +81,13 @@ func (p *Player) loadInPlayer() {
 		ReducedDebugInfo: false,
 	}))
 
-	p.client.WritePacket(packets.CPlayAbilitiesId, protocol.Serialize(&protocol.CPlayerAbilitiesPacket{
+	p.client.WritePacket(packets.CPlayAbilitiesId, protocol.Serialize(&packets.CPlayerAbilitiesPacket{
 		Flags:        0x04,
 		FlyingSpeed:  0.05,
 		WalkingSpeed: 0.1,
 	}))
 
-	p.client.WritePacket(packets.CHeldItemChangeId, protocol.Serialize(&protocol.CHeldItemChangePacket{
+	p.client.WritePacket(packets.CHeldItemChangeId, protocol.Serialize(&packets.CHeldItemChangePacket{
 		Slot: 0,
 	}))
 
@@ -116,7 +116,7 @@ func (p *Player) keepAlive() {
 		}
 
 		p.lastSentKeepAlive = int(rand.Int31())
-		p.client.WritePacket(packets.CKeepAliveId, protocol.Serialize(&protocol.KeepAlivePacket{
+		p.client.WritePacket(packets.CKeepAliveId, protocol.Serialize(&packets.KeepAlivePacket{
 			KeepAliveID: p.lastSentKeepAlive,
 		}))
 		p.mu.Unlock()

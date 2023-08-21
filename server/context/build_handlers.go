@@ -1,12 +1,12 @@
 package context
 
 import (
-	"github.com/PondWader/GoPractice/protocol"
+	"github.com/PondWader/GoPractice/protocol/packets"
 	"github.com/PondWader/GoPractice/server/world"
 )
 
 func (p *ContextPlayer) handleBlockPlace(packet interface{}) {
-	placePacket := packet.(*protocol.SPlayerBlockPlacement)
+	placePacket := packet.(*packets.SPlayerBlockPlacement)
 
 	x := placePacket.Location.X
 	y := placePacket.Location.Y

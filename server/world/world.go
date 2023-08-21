@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/PondWader/GoPractice/protocol"
+	"github.com/PondWader/GoPractice/protocol/packets"
 )
 
 // The world package handles the loading & saving of world data
@@ -54,7 +54,7 @@ func (w *World) GetChunkOrNil(x int32, z int32) *Chunk {
 }
 
 // Gets a chunk in the world in packet format without having to load air chunks
-func (w *World) GetChunkData(x int32, z int32) *protocol.CChunkData {
+func (w *World) GetChunkData(x int32, z int32) *packets.CChunkData {
 	w.mu.RLock()
 	key := GetChunkKey(x, z).String()
 	if w.chunks[key] == nil {
@@ -74,10 +74,10 @@ func GetChunkKey(x int32, z int32) *ChunkKey {
 }
 
 // Some default chunks to be used
-var EmptyChunk *protocol.CChunkData = NewChunk(0, 0).ToFormat()
-var AirChunk *protocol.CChunkData = NewChunk(0, 0).SetBlock(0, 0, 0, 0).ToFormat()
+var EmptyChunk *packets.CChunkData = NewChunk(0, 0).ToFormat()
+var AirChunk *packets.CChunkData = NewChunk(0, 0).SetBlock(0, 0, 0, 0).ToFormat()
 
-func GetEmptyChunk(x int32, z int32) *protocol.CChunkData {
+func GetEmptyChunk(x int32, z int32) *packets.CChunkData {
 	chunkData := *EmptyChunk
 	chunkData.ChunkX = x
 	chunkData.ChunkZ = z

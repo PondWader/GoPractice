@@ -58,8 +58,8 @@ func New(cfg config.ServerConfiguration, version string) *Server {
 func (s *Server) Broadcast(msg string, position int8) {
 	utils.Info(msg)
 
-	s.BroadcastPacket(packets.CChatMessageId, protocol.Serialize(&protocol.CChatMessage{
-		Data: protocol.ChatComponent{
+	s.BroadcastPacket(packets.CChatMessageId, protocol.Serialize(&packets.CChatMessage{
+		Data: packets.ChatComponent{
 			Text: msg,
 		},
 		Position: position,

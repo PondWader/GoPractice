@@ -6,6 +6,7 @@ import (
 	"github.com/PondWader/GoPractice/config"
 	server_interfaces "github.com/PondWader/GoPractice/interfaces/server"
 	"github.com/PondWader/GoPractice/protocol"
+	"github.com/PondWader/GoPractice/protocol/packets"
 	"github.com/PondWader/GoPractice/server/structs"
 	"github.com/PondWader/GoPractice/server/world"
 	"github.com/PondWader/GoPractice/utils"
@@ -87,12 +88,12 @@ func (c *Context) AddPlayer(client *protocol.ProtocolClient, entityId int32, mu 
 
 func (p *ContextPlayer) loadHandlers() {
 	p.Mu.Lock()
-	p.Client.SetPacketHandler(&protocol.SPlayerPositionPacket{}, p.handlePlayerPositionUpdate)
-	p.Client.SetPacketHandler(&protocol.SPlayerLookPacket{}, p.handlePlayerLookUpdate)
-	p.Client.SetPacketHandler(&protocol.SPlayerPositionAndLookPacket{}, p.handlePlayerPositionAndLookUpdate)
+	p.Client.SetPacketHandler(&packets.SPlayerPositionPacket{}, p.handlePlayerPositionUpdate)
+	p.Client.SetPacketHandler(&packets.SPlayerLookPacket{}, p.handlePlayerLookUpdate)
+	p.Client.SetPacketHandler(&packets.SPlayerPositionAndLookPacket{}, p.handlePlayerPositionAndLookUpdate)
 
 	if p.Context.building {
-		p.Client.SetPacketHandler(&protocol.SPlayerBlockPlacement{}, p.handleBlockPlace)
+		p.Client.SetPacketHandler(&packets.SPlayerBlockPlacement{}, p.handleBlockPlace)
 	}
 	p.Mu.Unlock()
 }
