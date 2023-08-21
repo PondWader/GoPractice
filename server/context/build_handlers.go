@@ -1,9 +1,8 @@
 package context
 
 import (
-	"fmt"
-
 	"github.com/PondWader/GoPractice/protocol"
+	"github.com/PondWader/GoPractice/server/world"
 )
 
 func (p *ContextPlayer) handleBlockPlace(packet interface{}) {
@@ -14,8 +13,8 @@ func (p *ContextPlayer) handleBlockPlace(packet interface{}) {
 	z := placePacket.Location.Z
 
 	if y >= 0 && y <= 255 {
-		fmt.Println(int(x&0xf), int(y&0xf), int(z&0xf))
-		p.Context.World.GetChunk(x>>4, z>>4).SetBlock(int(x&0xf), int(y&0xf), int(z&0xf), 1)
+		xInChunk, yInChunk, zInChunk := world.CoordsInChunk(int(x&0xf), int(y&0xf), int(z&0xf))
+		p.Context.World.GetChunk(x>>4, z>>4).SetBlock(xInChunk, yInChunk, zInChunk, 1)
 	} else {
 		p.Context.Events.Emit("itemActivated", p)
 	}
