@@ -5,6 +5,8 @@ import (
 	"errors"
 	"math"
 	"reflect"
+
+	"github.com/PondWader/GoPractice/protocol/packets"
 )
 
 func (client *ProtocolClient) deserialize(data []byte, format interface{}) error {
@@ -93,7 +95,7 @@ func (client *ProtocolClient) deserialize(data []byte, format interface{}) error
 			if z >= int32(math.Pow(2, 25)) {
 				z -= int32(math.Pow(2, 26))
 			}
-			field.Set(reflect.ValueOf(&Position{x, y, z}))
+			field.Set(reflect.ValueOf(&packets.Position{X: x, Y: y, Z: z}))
 
 		case "ByteArray":
 			lengthField := formatType.Field(i).Tag.Get("length")
