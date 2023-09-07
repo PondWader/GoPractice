@@ -2,6 +2,7 @@ package server
 
 import (
 	"github.com/PondWader/GoPractice/protocol"
+	"github.com/PondWader/GoPractice/protocol/enums"
 	"github.com/PondWader/GoPractice/protocol/packets"
 )
 
@@ -21,7 +22,7 @@ func (p *Player) loadPlayerList() {
 				Name:  "textures",
 				Value: player.client.Skin,
 			}},
-			GameMode: 2,
+			GameMode: int(enums.GamemodeAdventure),
 			Ping:     1,
 		})
 	}
@@ -56,7 +57,7 @@ func (p *Player) addToPlayerlist() {
 				Name:  "textures",
 				Value: p.client.Skin,
 			}},
-			GameMode: 2,
+			GameMode: int(enums.GamemodeAdventure),
 			Ping:     1,
 		}},
 	}))

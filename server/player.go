@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/PondWader/GoPractice/protocol"
+	"github.com/PondWader/GoPractice/protocol/enums"
 	"github.com/PondWader/GoPractice/protocol/packets"
 	"github.com/PondWader/GoPractice/server/context"
 )
@@ -73,7 +74,7 @@ func (p *Player) loadInPlayer() {
 
 	p.client.WritePacket(packets.CJoinGameId, protocol.Serialize(&packets.CJoinGamePacket{
 		EntityID:         p.entityId,
-		GameMode:         1, //Temp: creative // Adventure
+		GameMode:         enums.GamemodeCreative,
 		Dimension:        0,
 		Difficulty:       2, // Normal difficulty
 		MaxPlayers:       100,

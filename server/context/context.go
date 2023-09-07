@@ -6,6 +6,7 @@ import (
 	"github.com/PondWader/GoPractice/config"
 	server_interfaces "github.com/PondWader/GoPractice/interfaces/server"
 	"github.com/PondWader/GoPractice/protocol"
+	"github.com/PondWader/GoPractice/protocol/enums"
 	"github.com/PondWader/GoPractice/protocol/packets"
 	"github.com/PondWader/GoPractice/server/structs"
 	"github.com/PondWader/GoPractice/server/world"
@@ -29,6 +30,7 @@ type ContextPlayer struct {
 	EntityId     int32
 	Client       *protocol.ProtocolClient
 	Position     *structs.Location
+	GameMode     uint8
 	Mu           *sync.Mutex
 	loadedChunks map[string]*world.ChunkKey
 	currentChunk *world.ChunkKey
@@ -59,6 +61,7 @@ func (c *Context) AddPlayer(client *protocol.ProtocolClient, entityId int32, mu 
 		Context:        c,
 		Position:       &structs.Location{Y: 60},
 		EntitiesInView: make(map[int32]server_interfaces.Entity),
+		GameMode:       enums.GamemodeCreative,
 	}
 
 	centralChunk := c.World.GetChunk(0, 0)
@@ -94,6 +97,7 @@ func (p *ContextPlayer) loadHandlers() {
 
 	if p.Context.building {
 		p.Client.SetPacketHandler(&packets.SPlayerBlockPlacement{}, p.handleBlockPlace)
+		p.Client.SetPacketHandler(&packets.SPlayerDigging{}, p.handleDigging)
 	}
 	p.Mu.Unlock()
 }

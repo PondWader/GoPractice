@@ -27,6 +27,8 @@ func (client *ProtocolClient) BeginPacketReader() {
 			packetFormat = &packets.SPlayerPositionAndLookPacket{}
 		case packets.SPlayerBlockPlacementId:
 			packetFormat = &packets.SPlayerBlockPlacement{}
+		case packets.SPlayerDiggingId:
+			packetFormat = &packets.SPlayerDigging{}
 		default:
 			// utils.Error("Received unrecognized packet of ID", packetId, "from", client.Username)
 			continue

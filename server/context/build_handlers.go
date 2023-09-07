@@ -1,6 +1,7 @@
 package context
 
 import (
+	"github.com/PondWader/GoPractice/protocol/enums"
 	"github.com/PondWader/GoPractice/protocol/packets"
 	"github.com/PondWader/GoPractice/server/world"
 )
@@ -36,6 +37,16 @@ func (p *ContextPlayer) handleBlockPlace(packet interface{}) {
 		p.Context.Events.Emit("itemActivated", p)
 	}
 }
-func (p *ContextPlayer) handleDigging(packet interface{}) {
 
+func (p *ContextPlayer) handleDigging(packet interface{}) {
+	digPacket := packet.(*packets.SPlayerDigging)
+
+	x, y, z := digPacket.Location.X, digPacket.Location.Y, digPacket.Location.Z
+
+	p.Mu.Lock()
+	if p.GameMode == enums.GamemodeCreative {
+		xInChunk, yInChunk, zInChunk := world.CoordsInChunk(int(x&0xf), int(y&0xf), int(z&0xf))
+		p.Context.World.GetChunk(x>>4, z>>4).SetBlock(xInChunk, yInChunk, zInChunk, 0)
+	}
+	p.Mu.Unlock()
 }
