@@ -11,15 +11,15 @@ type Position struct {
 }
 
 type Slot struct {
-	Present   bool                   `type:"Boolean"`
-	ItemID    int                    `type:"VarInt" if:"Present"`
-	ItemCount int8                   `type:"Byte" if:"Present"`
-	NBT       map[string]*nbt.NbtTag `type:"NBT" if:"Present"`
+	BlockID    int16                  `type:"Short"`
+	ItemCount  int8                   `type:"Byte" if:"BlockID" notEquals:"-1"`
+	ItemDamage int16                  `type:"Short" if:"BlockID" notEquals:"-1"`
+	NBT        map[string]*nbt.NbtTag `type:"NBT" if:"BlockID" notEquals:"-1"`
 }
 
 type ChatComponent struct {
 	Text string `json:"text"`
-	// TO DO: make actually meet the chat spec (https://wiki.vg/Chat)
+	// TODO: make actually meet the chat spec (https://wiki.vg/Chat)
 }
 
 type EntityID struct {

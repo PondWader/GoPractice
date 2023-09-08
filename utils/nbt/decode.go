@@ -11,12 +11,13 @@ type decoder struct {
 	cursor int
 }
 
-func Decode(data []byte) (map[string]*NbtTag, error) {
+func Decode(data []byte) (map[string]*NbtTag, int, error) {
 	d := &decoder{
 		data: data,
 	}
 
-	return d.readCompound(true)
+	nbt, err := d.readCompound(true)
+	return nbt, d.cursor, err
 }
 
 func (d *decoder) readBytes(n int) []byte {

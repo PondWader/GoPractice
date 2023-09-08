@@ -65,3 +65,8 @@ type SPlayerDigging struct {
 	Location *Position `type:"Position"`
 	Face     int8      `type:"Byte"`
 }
+
+type SCreaviteInventoryAction struct {
+	Slot        int16 `type:"Short"`
+	ClickedItem *Slot `type:"Struct"`
+}

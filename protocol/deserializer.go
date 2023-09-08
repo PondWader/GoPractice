@@ -3,16 +3,22 @@ package protocol
 import (
 	"encoding/binary"
 	"errors"
+	"fmt"
 	"math"
 	"reflect"
 
 	"github.com/PondWader/GoPractice/protocol/packets"
+	"github.com/PondWader/GoPractice/utils/nbt"
 )
 
 func (client *ProtocolClient) deserialize(data []byte, format interface{}) error {
 	value := reflect.ValueOf(format).Elem()
 	formatType := reflect.TypeOf(format).Elem()
+	_, err := client.deserializeReflect(data, value, formatType)
+	return err
+}
 
+func (client *ProtocolClient) deserializeReflect(data []byte, value reflect.Value, formatType reflect.Type) (int, error) {
 	offset := 0
 	deserializer := client.newDeserializer(func(l int) ([]byte, error) {
 		if len(data) < offset+l {
@@ -25,14 +31,27 @@ func (client *ProtocolClient) deserialize(data []byte, format interface{}) error
 
 	for i := 0; i < value.NumField(); i++ {
 		field := value.Field(i)
-		valueType := formatType.Field(i).Tag.Get("type")
+		formatField := formatType.Field(i)
+		valueType := formatField.Tag.Get("type")
+
+		valueIf := formatField.Tag.Get("if")
+		if valueIf != "" {
+			ifField := value.FieldByName(valueIf)
+			if notEqualsField := formatField.Tag.Get("notEquals"); notEqualsField != "" {
+				if fmt.Sprint(ifField.Interface()) == notEqualsField {
+					continue
+				}
+			} else if ifField.Bool() == false {
+				continue
+			}
+		}
 
 		switch valueType {
 		case "VarInt":
 			v, _, err := deserializer.readVarInt()
 			if err != nil {
 				client.Disconnect(err.Error())
-				return err
+				return offset, err
 			}
 			field.Set(reflect.ValueOf(v))
 
@@ -40,7 +59,7 @@ func (client *ProtocolClient) deserialize(data []byte, format interface{}) error
 			v, err := deserializer.readString()
 			if err != nil {
 				client.Disconnect(err.Error())
-				return err
+				return offset, err
 			}
 			field.Set(reflect.ValueOf(v))
 
@@ -48,31 +67,39 @@ func (client *ProtocolClient) deserialize(data []byte, format interface{}) error
 			v, err := deserializer.readBytes(1)
 			if err != nil {
 				client.Disconnect(err.Error())
-				return err
+				return offset, err
 			}
 			field.Set(reflect.ValueOf(int8(v[0])))
+
+		case "Short":
+			v, err := deserializer.readUnsignedShort()
+			if err != nil {
+				client.Disconnect(err.Error())
+				return offset, err
+			}
+			field.Set(reflect.ValueOf(int16(v)))
 
 		case "UnsignedShort":
 			v, err := deserializer.readUnsignedShort()
 			if err != nil {
 				client.Disconnect(err.Error())
-				return err
+				return offset, err
 			}
 			field.Set(reflect.ValueOf(v))
 
 		case "Long":
-			v, err := deserializer.readLong()
+			v, err := deserializer.readUnsignedLong()
 			if err != nil {
 				client.Disconnect(err.Error())
-				return err
+				return offset, err
 			}
-			field.Set(reflect.ValueOf(v))
+			field.Set(reflect.ValueOf(int64(v)))
 
 		case "UnsignedLong":
 			v, err := deserializer.readUnsignedLong()
 			if err != nil {
 				client.Disconnect(err.Error())
-				return err
+				return offset, err
 			}
 			field.Set(reflect.ValueOf(v))
 
@@ -80,7 +107,7 @@ func (client *ProtocolClient) deserialize(data []byte, format interface{}) error
 			v, err := deserializer.readUnsignedLong()
 			if err != nil {
 				client.Disconnect(err.Error())
-				return err
+				return offset, err
 			}
 
 			x := int32(v >> 38)
@@ -102,7 +129,7 @@ func (client *ProtocolClient) deserialize(data []byte, format interface{}) error
 			v, err := deserializer.readBytes(value.FieldByName(lengthField).Interface().(int))
 			if err != nil {
 				client.Disconnect(err.Error())
-				return err
+				return offset, err
 			}
 			field.Set(reflect.ValueOf(v))
 
@@ -110,7 +137,7 @@ func (client *ProtocolClient) deserialize(data []byte, format interface{}) error
 			v, err := deserializer.readDouble()
 			if err != nil {
 				client.Disconnect(err.Error())
-				return err
+				return offset, err
 			}
 			field.Set(reflect.ValueOf(v))
 
@@ -118,7 +145,7 @@ func (client *ProtocolClient) deserialize(data []byte, format interface{}) error
 			v, err := deserializer.readFloat()
 			if err != nil {
 				client.Disconnect(err.Error())
-				return err
+				return offset, err
 			}
 			field.Set(reflect.ValueOf(v))
 
@@ -126,16 +153,35 @@ func (client *ProtocolClient) deserialize(data []byte, format interface{}) error
 			v, err := deserializer.readBytes(1)
 			if err != nil {
 				client.Disconnect(err.Error())
-				return err
+				return offset, err
 			}
 			field.Set(reflect.ValueOf(v[0] == 1))
+
+		case "Struct":
+			structure := reflect.New(field.Type().Elem())
+			n, err := client.deserializeReflect(data[offset:], structure.Elem(), field.Type().Elem())
+			offset += n
+			if err != nil {
+				client.Disconnect(err.Error())
+				return offset, err
+			}
+			field.Set(structure)
+
+		case "NBT":
+			nbt, n, err := nbt.Decode(data[offset:])
+			offset += n
+			if err != nil {
+				client.Disconnect(err.Error())
+				return offset, err
+			}
+			field.Set(reflect.ValueOf(nbt))
 
 		default:
 			panic("A type of " + valueType + " is used but the deserializer does not know how to handle it!")
 		}
 	}
 
-	return nil
+	return offset, nil
 }
 
 type deserializer struct {
@@ -192,14 +238,6 @@ func (deserializer *deserializer) readUnsignedShort() (uint16, error) {
 		return 0, err
 	}
 	return binary.BigEndian.Uint16(bytes), nil
-}
-
-func (deserializer *deserializer) readLong() (int64, error) {
-	bytes, err := deserializer.readBytes(8)
-	if err != nil {
-		return 0, err
-	}
-	return int64(binary.BigEndian.Uint64(bytes)), nil
 }
 
 func (deserializer *deserializer) readUnsignedLong() (uint64, error) {

@@ -94,6 +94,7 @@ func (p *ContextPlayer) loadHandlers() {
 	p.Client.SetPacketHandler(&packets.SPlayerPositionPacket{}, p.handlePlayerPositionUpdate)
 	p.Client.SetPacketHandler(&packets.SPlayerLookPacket{}, p.handlePlayerLookUpdate)
 	p.Client.SetPacketHandler(&packets.SPlayerPositionAndLookPacket{}, p.handlePlayerPositionAndLookUpdate)
+	p.Client.SetPacketHandler(&packets.SCreaviteInventoryAction{}, p.handleCreativeInventoryAction)
 
 	if p.Context.building {
 		p.Client.SetPacketHandler(&packets.SPlayerBlockPlacement{}, p.handleBlockPlace)
