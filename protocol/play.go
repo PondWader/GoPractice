@@ -29,6 +29,8 @@ func (client *ProtocolClient) BeginPacketReader() {
 			packetFormat = &packets.SPlayerBlockPlacement{}
 		case packets.SPlayerDiggingId:
 			packetFormat = &packets.SPlayerDigging{}
+		case packets.SHeldItemChangeId:
+			packetFormat = &packets.SHeldItemChange{}
 		case packets.SCreativeInventoryActionId:
 			packetFormat = &packets.SCreaviteInventoryAction{}
 		default:

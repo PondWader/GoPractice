@@ -7,8 +7,10 @@ import (
 )
 
 type Slot struct {
-	Item Item
-	NBT  map[string]*nbt.NbtTag
+	Item  Item
+	State int16
+	Count int8
+	NBT   map[string]*nbt.NbtTag
 }
 
 type Inventory struct {

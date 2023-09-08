@@ -33,6 +33,7 @@ type ContextPlayer struct {
 	Position     *structs.Location
 	GameMode     uint8
 	Inventory    *inventory.Inventory
+	HeldSlot     int16
 	Mu           *sync.Mutex
 	loadedChunks map[string]*world.ChunkKey
 	currentChunk *world.ChunkKey
@@ -65,6 +66,7 @@ func (c *Context) AddPlayer(client *protocol.ProtocolClient, entityId int32, mu 
 		EntitiesInView: make(map[int32]server_interfaces.Entity),
 		GameMode:       enums.GamemodeCreative,
 		Inventory:      inventory.New(45),
+		HeldSlot:       36,
 	}
 
 	centralChunk := c.World.GetChunk(0, 0)
@@ -97,6 +99,7 @@ func (p *ContextPlayer) loadHandlers() {
 	p.Client.SetPacketHandler(&packets.SPlayerPositionPacket{}, p.handlePlayerPositionUpdate)
 	p.Client.SetPacketHandler(&packets.SPlayerLookPacket{}, p.handlePlayerLookUpdate)
 	p.Client.SetPacketHandler(&packets.SPlayerPositionAndLookPacket{}, p.handlePlayerPositionAndLookUpdate)
+	p.Client.SetPacketHandler(&packets.SHeldItemChange{}, p.handleHeldItemChange)
 	p.Client.SetPacketHandler(&packets.SCreaviteInventoryAction{}, p.handleCreativeInventoryAction)
 
 	if p.Context.building {

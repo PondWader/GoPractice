@@ -31,8 +31,14 @@ func (p *ContextPlayer) handleBlockPlace(packet interface{}) {
 	x, y, z := getBlockLocation(placePacket.Location, placePacket.Face)
 
 	if y >= 0 && y <= 255 {
+		p.Mu.Lock()
+		slot := p.Inventory.GetSlot(int(p.HeldSlot))
+		p.Mu.Unlock()
+		if slot == nil {
+			return
+		}
 		xInChunk, yInChunk, zInChunk := world.CoordsInChunk(int(x&0xf), int(y&0xf), int(z&0xf))
-		p.Context.World.GetChunk(x>>4, z>>4).SetBlock(xInChunk, yInChunk, zInChunk, 1)
+		p.Context.World.GetChunk(x>>4, z>>4).SetBlock(xInChunk, yInChunk, zInChunk, uint8(slot.Item)).SetState(xInChunk, yInChunk, zInChunk, uint8(slot.State))
 	} else {
 		p.Context.Events.Emit("itemActivated", p)
 	}

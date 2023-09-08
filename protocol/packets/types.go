@@ -11,10 +11,10 @@ type Position struct {
 }
 
 type Slot struct {
-	BlockID    int16                  `type:"Short"`
-	ItemCount  int8                   `type:"Byte" if:"BlockID" notEquals:"-1"`
-	ItemDamage int16                  `type:"Short" if:"BlockID" notEquals:"-1"`
-	NBT        map[string]*nbt.NbtTag `type:"NBT" if:"BlockID" notEquals:"-1"`
+	BlockID   int16                  `type:"Short"`
+	ItemCount int8                   `type:"Byte" if:"BlockID" notEquals:"-1"`
+	ItemState int16                  `type:"Short" if:"BlockID" notEquals:"-1"`
+	NBT       map[string]*nbt.NbtTag `type:"NBT" if:"BlockID" notEquals:"-1"`
 }
 
 type ChatComponent struct {
