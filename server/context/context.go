@@ -8,6 +8,7 @@ import (
 	"github.com/PondWader/GoPractice/protocol"
 	"github.com/PondWader/GoPractice/protocol/enums"
 	"github.com/PondWader/GoPractice/protocol/packets"
+	"github.com/PondWader/GoPractice/server/inventory"
 	"github.com/PondWader/GoPractice/server/structs"
 	"github.com/PondWader/GoPractice/server/world"
 	"github.com/PondWader/GoPractice/utils"
@@ -31,6 +32,7 @@ type ContextPlayer struct {
 	Client       *protocol.ProtocolClient
 	Position     *structs.Location
 	GameMode     uint8
+	Inventory    *inventory.Inventory
 	Mu           *sync.Mutex
 	loadedChunks map[string]*world.ChunkKey
 	currentChunk *world.ChunkKey
@@ -62,6 +64,7 @@ func (c *Context) AddPlayer(client *protocol.ProtocolClient, entityId int32, mu 
 		Position:       &structs.Location{Y: 60},
 		EntitiesInView: make(map[int32]server_interfaces.Entity),
 		GameMode:       enums.GamemodeCreative,
+		Inventory:      inventory.New(45),
 	}
 
 	centralChunk := c.World.GetChunk(0, 0)

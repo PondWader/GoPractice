@@ -1,9 +1,9 @@
 package inventory
 
-type item uint16
+type Item uint16
 
 const (
-	Air item = iota
+	Air Item = iota
 	Stone
 	Grass
 	Dirt
