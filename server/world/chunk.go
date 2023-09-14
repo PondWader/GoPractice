@@ -57,7 +57,7 @@ func (c *Chunk) SetBlock(x int, y int, z int, blockType uint8) *Chunk {
 	section := c.getSection(y)
 
 	c.mu.Lock()
-	section.blocks[getBlockIndex(x, y, z)] = uint16(blockType << 4)
+	section.blocks[getBlockIndex(x, y, z)] = uint16(blockType) << 4
 	c.IsEmpty = false
 	c.mu.Unlock()
 
